@@ -1,0 +1,111 @@
+{
+  "appTitle": "MT12 Telemetry",
+  "nav": {
+    "source": "Fuente",
+    "layout": "Diseño",
+    "export": "Exportar"
+  },
+  "topbar": {
+    "save": "Guardar",
+    "restartToUpdate": "Reiniciar para actualizar",
+    "available": "disponible",
+    "samplesUnit": "muestras"
+  },
+  "source": {
+    "manualCsvTitle": "CSV Manual",
+    "browseCsv": "Buscar CSV…",
+    "loading": "Cargando…",
+    "mt12AutoTitle": "Unidad MT12 (Auto)",
+    "scanForUnits": "Buscar unidades",
+    "radioUnit": "Unidad radio",
+    "noUnitFound": "Sin unidad encontrada",
+    "logFile": "Archivo de log",
+    "noLogSelected": "Sin log seleccionado",
+    "installScripts": "Instalar Scripts en SD",
+    "installScriptsTitle": "Instalar scripts Lua en {{root}}",
+    "scriptLangTitle": "Idioma del script en la radio",
+    "editLayout": "Editar diseño",
+    "csvPathPlaceholder": "/ruta/al/log.csv"
+  },
+  "layout": {
+    "noSource": "Sin fuente cargada",
+    "selectSource": "selecciona una fuente",
+    "add": "Añadir",
+    "duplicate": "Duplicar",
+    "delete": "Eliminar",
+    "reset": "Restablecer",
+    "selectedWidget": "Widget seleccionado",
+    "noWidgetSelected": "Sin widget seleccionado",
+    "name": "Nombre",
+    "label": "Etiqueta",
+    "source": "Fuente",
+    "widgetType": "Tipo de widget",
+    "widthPx": "Ancho px",
+    "heightPx": "Alto px",
+    "shadow": "Sombra",
+    "selectOrAdd": "Selecciona o añade un widget",
+    "zoomOut": "Alejar",
+    "resetZoom": "Restablecer zoom",
+    "zoomIn": "Acercar",
+    "swapDimensions": "Intercambiar ancho ↔ alto"
+  },
+  "colors": {
+    "value": "Valor",
+    "labelText": "Etiqueta",
+    "boxFill": "Relleno caja",
+    "boxOutline": "Contorno caja",
+    "spokeHub": "Radio / cubo",
+    "valueText": "Texto valor",
+    "wheelFill": "Relleno rueda",
+    "wheelOutline": "Contorno rueda",
+    "negativeFill": "Relleno negativo",
+    "positiveFill": "Relleno positivo",
+    "centerMark": "Marca central",
+    "trackFill": "Relleno pista",
+    "trackOutline": "Contorno pista",
+    "needleHub": "Aguja / cubo",
+    "circleFill": "Relleno círculo",
+    "circleOutline": "Contorno círculo"
+  },
+  "export": {
+    "renderSettings": "Ajustes de renderizado",
+    "fps": "FPS",
+    "width": "Ancho",
+    "height": "Alto",
+    "exportMov": "Exportar MOV transparente (ProRes 4444)",
+    "outputPaths": "Rutas de salida",
+    "movOutputPath": "Ruta de salida MOV",
+    "browse": "Buscar",
+    "ffmpegSection": "ffmpeg",
+    "ffmpegReady": "✓ ffmpeg listo",
+    "ffmpegMissing": "✗ ffmpeg no encontrado — necesario para exportar MOV",
+    "ffmpegPathPlaceholder": "Ruta al ejecutable de ffmpeg",
+    "autoDetect": "Auto-detectar",
+    "download": "Descargar",
+    "downloading": "Descargando…",
+    "log": "Log",
+    "rendering": "Renderizando…",
+    "renderOverlay": "Renderizar superposición"
+  },
+  "logs": {
+    "ffmpegFound": "ffmpeg encontrado: {{path}} ({{source}})",
+    "ffmpegNotFound": "ffmpeg no encontrado en este sistema. Prueba Descargar.",
+    "ffmpegDownloaded": "ffmpeg descargado y listo.",
+    "rendered": "Renderizados {{count}} fotograma(s)",
+    "settingsSaved": "Ajustes guardados",
+    "settingsSavedPath": "Ajustes guardados: {{path}}",
+    "loadedSamples": "Cargadas {{count}} muestras ({{mode}})",
+    "foundRadios": "{{count}} fuente(s) de radio encontradas",
+    "noEdgeTx": "No se encontró SD de EdgeTX",
+    "scriptsInstalled": "Scripts instalados ({{count}} archivos):"
+  },
+  "language": {
+    "label": "Idioma"
+  },
+  "support": {
+    "channelSub": "Canal de YouTube RC en español",
+    "subscribe": "Suscribirse",
+    "donateTitle": "Apoya el desarrollo",
+    "donateSub": "Escanea o haz clic para donar"
+  }
+}

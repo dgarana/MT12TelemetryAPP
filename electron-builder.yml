@@ -1,0 +1,51 @@
+appId: dev.dgara.mt12telemetry
+productName: MT12 Telemetry
+publish:
+  provider: github
+  owner: dgarana
+  repo: MT12TelemetryAPP
+directories:
+  buildResources: build
+  output: release
+files:
+  - dist/**/*
+  - package.json
+  - '!src/**'
+  - '!**/*.ts'
+  - '!**/*.map'
+  - '!**/tsconfig*.json'
+  - '!.github/**'
+  - '!edgetx/**'
+  - '!generate_dummy_csv.py'
+  - '!*.csv'
+extraResources:
+  - from: edgetx/sdcard/SCRIPTS
+    to: edgetx/sdcard/SCRIPTS
+    filter:
+      - '**/*.lua'
+asarUnpack:
+  - node_modules/@napi-rs/**
+win:
+  target:
+    - nsis
+  artifactName: ${productName}-${version}-setup.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  createDesktopShortcut: true
+mac:
+  category: public.app-category.video
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+  artifactName: ${productName}-${version}-${arch}.${ext}
+linux:
+  maintainer: dgara <noreply@dgara.dev>
+  target:
+    - AppImage
+    - deb
+  category: Video
+  artifactName: ${productName}-${version}.${ext}

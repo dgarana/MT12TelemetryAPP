@@ -1,0 +1,111 @@
+{
+  "appTitle": "MT12 Telemetry",
+  "nav": {
+    "source": "Source",
+    "layout": "Layout",
+    "export": "Export"
+  },
+  "topbar": {
+    "save": "Save",
+    "restartToUpdate": "Restart to update",
+    "available": "available",
+    "samplesUnit": "samples"
+  },
+  "source": {
+    "manualCsvTitle": "Manual CSV",
+    "browseCsv": "Browse CSV…",
+    "loading": "Loading…",
+    "mt12AutoTitle": "MT12 Unit (Auto)",
+    "scanForUnits": "Scan for units",
+    "radioUnit": "Radio unit",
+    "noUnitFound": "No unit found",
+    "logFile": "Log file",
+    "noLogSelected": "No log selected",
+    "installScripts": "Install Scripts to SD",
+    "installScriptsTitle": "Install RC logger Lua scripts to {{root}}",
+    "scriptLangTitle": "Script language on the radio",
+    "editLayout": "Edit Layout",
+    "csvPathPlaceholder": "/path/to/log.csv"
+  },
+  "layout": {
+    "noSource": "No source loaded",
+    "selectSource": "select a source",
+    "add": "Add",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "reset": "Reset",
+    "selectedWidget": "Selected widget",
+    "noWidgetSelected": "No widget selected",
+    "name": "Name",
+    "label": "Label",
+    "source": "Source",
+    "widgetType": "Widget type",
+    "widthPx": "Width px",
+    "heightPx": "Height px",
+    "shadow": "Shadow",
+    "selectOrAdd": "Select or add a widget",
+    "zoomOut": "Zoom out",
+    "resetZoom": "Reset zoom",
+    "zoomIn": "Zoom in",
+    "swapDimensions": "Swap width ↔ height"
+  },
+  "colors": {
+    "value": "Value",
+    "labelText": "Label",
+    "boxFill": "Box fill",
+    "boxOutline": "Box outline",
+    "spokeHub": "Spoke / hub",
+    "valueText": "Value text",
+    "wheelFill": "Wheel fill",
+    "wheelOutline": "Wheel outline",
+    "negativeFill": "Negative fill",
+    "positiveFill": "Positive fill",
+    "centerMark": "Center mark",
+    "trackFill": "Track fill",
+    "trackOutline": "Track outline",
+    "needleHub": "Needle / hub",
+    "circleFill": "Circle fill",
+    "circleOutline": "Circle outline"
+  },
+  "export": {
+    "renderSettings": "Render Settings",
+    "fps": "FPS",
+    "width": "Width",
+    "height": "Height",
+    "exportMov": "Export transparent MOV (ProRes 4444)",
+    "outputPaths": "Output Paths",
+    "movOutputPath": "MOV output path",
+    "browse": "Browse",
+    "ffmpegSection": "ffmpeg",
+    "ffmpegReady": "✓ ffmpeg ready",
+    "ffmpegMissing": "✗ ffmpeg not found — required for MOV export",
+    "ffmpegPathPlaceholder": "Path to ffmpeg executable",
+    "autoDetect": "Auto-detect",
+    "download": "Download",
+    "downloading": "Downloading…",
+    "log": "Log",
+    "rendering": "Rendering…",
+    "renderOverlay": "Render Overlay"
+  },
+  "logs": {
+    "ffmpegFound": "ffmpeg found: {{path}} ({{source}})",
+    "ffmpegNotFound": "ffmpeg not found on this system. Try Download.",
+    "ffmpegDownloaded": "ffmpeg downloaded and ready.",
+    "rendered": "Rendered {{count}} frame(s)",
+    "settingsSaved": "Settings saved",
+    "settingsSavedPath": "Settings saved: {{path}}",
+    "loadedSamples": "Loaded {{count}} samples ({{mode}})",
+    "foundRadios": "Found {{count}} radio source(s)",
+    "noEdgeTx": "No EdgeTX SD found",
+    "scriptsInstalled": "Scripts installed ({{count}} files):"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "support": {
+    "channelSub": "YouTube RC channel in Spanish",
+    "subscribe": "Subscribe",
+    "donateTitle": "Support development",
+    "donateSub": "Scan or click to donate"
+  }
+}

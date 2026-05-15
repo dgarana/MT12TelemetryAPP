@@ -1,0 +1,47 @@
+{
+  "name": "mt12-telemetry-electron",
+  "version": "0.1.0",
+  "description": "Electron frontend for MT12TelemetryAPP",
+  "main": "dist/main/main.js",
+  "author": "dgara",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "electron": "tsc -p tsconfig.node.json && electron .",
+    "start": "npm-run-all build electron:file",
+    "start:dev": "npm-run-all -p dev wait-and-electron",
+    "electron:file": "cross-env MT12_ELECTRON_FILE=1 electron .",
+    "wait-and-electron": "wait-on tcp:5173 && npm run electron",
+    "build": "tsc -p tsconfig.node.json && vite build",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "smoke": "npm-run-all build smoke:electron",
+    "smoke:electron": "cross-env MT12_ELECTRON_FILE=1 MT12_ELECTRON_SMOKE=1 electron .",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit"
+  },
+  "dependencies": {
+    "@napi-rs/canvas": "^1.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "cross-env": "^7.0.3",
+    "electron-updater": "^6.8.3",
+    "i18next": "^26.1.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-i18next": "^17.0.7",
+    "react-qr-code": "^2.0.21",
+    "vite": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^26.0.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.6.0",
+    "wait-on": "^8.0.0"
+  }
+}

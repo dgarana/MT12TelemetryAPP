@@ -1,0 +1,111 @@
+{
+  "appTitle": "MT12 Telemetry",
+  "nav": {
+    "source": "Quelle",
+    "layout": "Layout",
+    "export": "Exportieren"
+  },
+  "topbar": {
+    "save": "Speichern",
+    "restartToUpdate": "Neustart zum Aktualisieren",
+    "available": "verfügbar",
+    "samplesUnit": "Proben"
+  },
+  "source": {
+    "manualCsvTitle": "CSV manuell",
+    "browseCsv": "CSV suchen…",
+    "loading": "Laden…",
+    "mt12AutoTitle": "MT12-Einheit (Auto)",
+    "scanForUnits": "Einheiten suchen",
+    "radioUnit": "Funkeinheit",
+    "noUnitFound": "Keine Einheit gefunden",
+    "logFile": "Log-Datei",
+    "noLogSelected": "Kein Log ausgewählt",
+    "installScripts": "Skripte auf SD installieren",
+    "installScriptsTitle": "Lua-Skripte auf {{root}} installieren",
+    "scriptLangTitle": "Skriptsprache auf der Radio",
+    "editLayout": "Layout bearbeiten",
+    "csvPathPlaceholder": "/Pfad/zur/log.csv"
+  },
+  "layout": {
+    "noSource": "Keine Quelle geladen",
+    "selectSource": "Quelle auswählen",
+    "add": "Hinzufügen",
+    "duplicate": "Duplizieren",
+    "delete": "Löschen",
+    "reset": "Zurücksetzen",
+    "selectedWidget": "Ausgewähltes Widget",
+    "noWidgetSelected": "Kein Widget ausgewählt",
+    "name": "Name",
+    "label": "Beschriftung",
+    "source": "Quelle",
+    "widgetType": "Widget-Typ",
+    "widthPx": "Breite px",
+    "heightPx": "Höhe px",
+    "shadow": "Schatten",
+    "selectOrAdd": "Widget auswählen oder hinzufügen",
+    "zoomOut": "Herauszoomen",
+    "resetZoom": "Zoom zurücksetzen",
+    "zoomIn": "Hineinzoomen",
+    "swapDimensions": "Breite ↔ Höhe tauschen"
+  },
+  "colors": {
+    "value": "Wert",
+    "labelText": "Beschriftung",
+    "boxFill": "Box-Füllung",
+    "boxOutline": "Box-Kontur",
+    "spokeHub": "Speiche / Nabe",
+    "valueText": "Werttext",
+    "wheelFill": "Rad-Füllung",
+    "wheelOutline": "Rad-Kontur",
+    "negativeFill": "Negative Füllung",
+    "positiveFill": "Positive Füllung",
+    "centerMark": "Mittelmarkierung",
+    "trackFill": "Spurenfüllung",
+    "trackOutline": "Spurenkontur",
+    "needleHub": "Zeiger / Nabe",
+    "circleFill": "Kreisfüllung",
+    "circleOutline": "Kreiskontur"
+  },
+  "export": {
+    "renderSettings": "Render-Einstellungen",
+    "fps": "FPS",
+    "width": "Breite",
+    "height": "Höhe",
+    "exportMov": "Transparentes MOV exportieren (ProRes 4444)",
+    "outputPaths": "Ausgabepfade",
+    "movOutputPath": "MOV-Ausgabepfad",
+    "browse": "Durchsuchen",
+    "ffmpegSection": "ffmpeg",
+    "ffmpegReady": "✓ ffmpeg bereit",
+    "ffmpegMissing": "✗ ffmpeg nicht gefunden — für MOV-Export erforderlich",
+    "ffmpegPathPlaceholder": "Pfad zur ffmpeg-Datei",
+    "autoDetect": "Automatisch erkennen",
+    "download": "Herunterladen",
+    "downloading": "Herunterladen…",
+    "log": "Protokoll",
+    "rendering": "Rendern…",
+    "renderOverlay": "Overlay rendern"
+  },
+  "logs": {
+    "ffmpegFound": "ffmpeg gefunden: {{path}} ({{source}})",
+    "ffmpegNotFound": "ffmpeg nicht gefunden. Bitte herunterladen.",
+    "ffmpegDownloaded": "ffmpeg heruntergeladen und bereit.",
+    "rendered": "{{count}} Frame(s) gerendert",
+    "settingsSaved": "Einstellungen gespeichert",
+    "settingsSavedPath": "Einstellungen gespeichert: {{path}}",
+    "loadedSamples": "{{count}} Proben geladen ({{mode}})",
+    "foundRadios": "{{count}} Funkquelle(n) gefunden",
+    "noEdgeTx": "Keine EdgeTX-SD gefunden",
+    "scriptsInstalled": "Skripte installiert ({{count}} Dateien):"
+  },
+  "language": {
+    "label": "Sprache"
+  },
+  "support": {
+    "channelSub": "YouTube RC-Kanal auf Spanisch",
+    "subscribe": "Abonnieren",
+    "donateTitle": "Entwicklung unterstützen",
+    "donateSub": "Scannen oder klicken zum Spenden"
+  }
+}

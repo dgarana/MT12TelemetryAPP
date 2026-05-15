@@ -1,0 +1,111 @@
+{
+  "appTitle": "MT12 Telemetry",
+  "nav": {
+    "source": "Source",
+    "layout": "Mise en page",
+    "export": "Exporter"
+  },
+  "topbar": {
+    "save": "Enregistrer",
+    "restartToUpdate": "Redémarrer pour mettre à jour",
+    "available": "disponible",
+    "samplesUnit": "échantillons"
+  },
+  "source": {
+    "manualCsvTitle": "CSV manuel",
+    "browseCsv": "Parcourir CSV…",
+    "loading": "Chargement…",
+    "mt12AutoTitle": "Unité MT12 (Auto)",
+    "scanForUnits": "Rechercher des unités",
+    "radioUnit": "Unité radio",
+    "noUnitFound": "Aucune unité trouvée",
+    "logFile": "Fichier journal",
+    "noLogSelected": "Aucun journal sélectionné",
+    "installScripts": "Installer les scripts sur SD",
+    "installScriptsTitle": "Installer les scripts Lua sur {{root}}",
+    "scriptLangTitle": "Langue du script sur la radio",
+    "editLayout": "Modifier la mise en page",
+    "csvPathPlaceholder": "/chemin/vers/log.csv"
+  },
+  "layout": {
+    "noSource": "Aucune source chargée",
+    "selectSource": "sélectionner une source",
+    "add": "Ajouter",
+    "duplicate": "Dupliquer",
+    "delete": "Supprimer",
+    "reset": "Réinitialiser",
+    "selectedWidget": "Widget sélectionné",
+    "noWidgetSelected": "Aucun widget sélectionné",
+    "name": "Nom",
+    "label": "Étiquette",
+    "source": "Source",
+    "widgetType": "Type de widget",
+    "widthPx": "Largeur px",
+    "heightPx": "Hauteur px",
+    "shadow": "Ombre",
+    "selectOrAdd": "Sélectionner ou ajouter un widget",
+    "zoomOut": "Dézoomer",
+    "resetZoom": "Réinitialiser le zoom",
+    "zoomIn": "Zoomer",
+    "swapDimensions": "Inverser largeur ↔ hauteur"
+  },
+  "colors": {
+    "value": "Valeur",
+    "labelText": "Étiquette",
+    "boxFill": "Remplissage boîte",
+    "boxOutline": "Contour boîte",
+    "spokeHub": "Rayon / moyeu",
+    "valueText": "Texte valeur",
+    "wheelFill": "Remplissage roue",
+    "wheelOutline": "Contour roue",
+    "negativeFill": "Remplissage négatif",
+    "positiveFill": "Remplissage positif",
+    "centerMark": "Repère central",
+    "trackFill": "Remplissage piste",
+    "trackOutline": "Contour piste",
+    "needleHub": "Aiguille / moyeu",
+    "circleFill": "Remplissage cercle",
+    "circleOutline": "Contour cercle"
+  },
+  "export": {
+    "renderSettings": "Paramètres de rendu",
+    "fps": "FPS",
+    "width": "Largeur",
+    "height": "Hauteur",
+    "exportMov": "Exporter MOV transparent (ProRes 4444)",
+    "outputPaths": "Chemins de sortie",
+    "movOutputPath": "Chemin de sortie MOV",
+    "browse": "Parcourir",
+    "ffmpegSection": "ffmpeg",
+    "ffmpegReady": "✓ ffmpeg prêt",
+    "ffmpegMissing": "✗ ffmpeg introuvable — requis pour l'export MOV",
+    "ffmpegPathPlaceholder": "Chemin vers l'exécutable ffmpeg",
+    "autoDetect": "Détection auto",
+    "download": "Télécharger",
+    "downloading": "Téléchargement…",
+    "log": "Journal",
+    "rendering": "Rendu en cours…",
+    "renderOverlay": "Rendre le calque"
+  },
+  "logs": {
+    "ffmpegFound": "ffmpeg trouvé : {{path}} ({{source}})",
+    "ffmpegNotFound": "ffmpeg introuvable sur ce système. Essayez Télécharger.",
+    "ffmpegDownloaded": "ffmpeg téléchargé et prêt.",
+    "rendered": "{{count}} frame(s) rendu(s)",
+    "settingsSaved": "Paramètres enregistrés",
+    "settingsSavedPath": "Paramètres enregistrés : {{path}}",
+    "loadedSamples": "{{count}} échantillons chargés ({{mode}})",
+    "foundRadios": "{{count}} source(s) radio trouvée(s)",
+    "noEdgeTx": "Aucune SD EdgeTX trouvée",
+    "scriptsInstalled": "Scripts installés ({{count}} fichiers) :"
+  },
+  "language": {
+    "label": "Langue"
+  },
+  "support": {
+    "channelSub": "Chaîne YouTube RC en espagnol",
+    "subscribe": "S'abonner",
+    "donateTitle": "Soutenir le développement",
+    "donateSub": "Scanner ou cliquer pour donner"
+  }
+}
