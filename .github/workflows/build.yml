@@ -1,21 +1,49 @@
-name: Build & Release
+name: Build & Publish
 
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   build:
+    name: Build ${{ matrix.target }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
+            target: win
             script: dist:win
+            artifact_glob: |
+              release/*.exe
+              release/*.exe.blockmap
+              release/latest*.yml
           - os: macos-latest
+            target: mac
             script: dist:mac
-          - os: ubuntu-latest
+            artifact_glob: |
+              release/*.dmg
+              release/*.dmg.blockmap
+              release/*.zip
+              release/latest*.yml
+          - os: ubuntu-22.04
+            target: linux
             script: dist:linux
+            artifact_glob: |
+              release/*.AppImage
+              release/*.deb
+              release/latest*.yml
 
     runs-on: ${{ matrix.os }}
 
@@ -24,57 +52,63 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
-          cache: npm
+          node-version-file: '.nvmrc'
+          cache: 'npm'
 
-      - run: npm ci
+      - name: Install Linux system deps
+        if: matrix.target == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            rpm libarchive-tools fakeroot dpkg
 
-      - name: Build & package
-        run: npm run ${{ matrix.script }} -- --publish never
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build distributables
+        run: npm run ${{ matrix.script }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: release-${{ matrix.os }}
-          path: release/
-          if-no-files-found: error
+          name: mt12-${{ matrix.target }}
+          path: ${{ matrix.artifact_glob }}
+          if-no-files-found: ignore
+          retention-days: 7
 
-  publish:
+  release:
+    name: Publish GitHub Release
     needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-
-      - run: npm ci
-
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: release/
+          path: artifacts
           merge-multiple: true
 
-      - name: Generate changelog
-        uses: orhun/git-cliff-action@v4
-        with:
-          config: cliff.toml
-          args: --latest --strip header --output RELEASE_NOTES.md
+      - name: List artifacts
+        run: ls -lh artifacts
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          body_path: RELEASE_NOTES.md
-          files: release/**/*
+          tag_name: ${{ github.ref_name }}
           draft: false
-          prerelease: false
+          generate_release_notes: false
+          fail_on_unmatched_files: false
+          files: |
+            artifacts/*.exe
+            artifacts/*.exe.blockmap
+            artifacts/*.dmg
+            artifacts/*.dmg.blockmap
+            artifacts/*.zip
+            artifacts/*.AppImage
+            artifacts/*.deb
+            artifacts/latest*.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
