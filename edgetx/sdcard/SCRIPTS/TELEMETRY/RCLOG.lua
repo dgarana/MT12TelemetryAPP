@@ -26,7 +26,6 @@ end
 local app = newLoggerApp({
   mode = "telemetry",
   scriptLabel = "RCLOG TEL",
-  lang = "{{LANG}}",
 })
 
 return {

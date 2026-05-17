@@ -1220,3 +1220,72 @@ p {
     grid-template-columns: 1fr;
   }
 }
+
+/* ─── Install view ───────────────────────────────────────────────────────── */
+
+.install-card {
+  max-width: 360px;
+}
+
+.mode-toggle {
+  display: flex;
+  gap: 4px;
+  background: #0d1317;
+  border-radius: 8px;
+  padding: 3px;
+  width: fit-content;
+}
+
+.mode-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 16px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #8a9baa;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mode-toggle-btn.active {
+  background: #1e2a34;
+  color: #edf3f8;
+}
+
+.install-mode-desc {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #8a9baa;
+  line-height: 1.5;
+  min-height: 2.4em;
+}
+
+.install-result {
+  background: #161d23;
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.install-result-title {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: #8a9baa;
+}
+
+.install-result ul {
+  margin: 0;
+  padding: 0 0 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.install-result li {
+  font-size: 0.82rem;
+  color: #4fc3f7;
+  font-family: monospace;
+}
+

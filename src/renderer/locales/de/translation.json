@@ -1,9 +1,26 @@
 {
   "appTitle": "MT12 Telemetry",
   "nav": {
-    "source": "Quelle",
-    "layout": "Layout",
-    "export": "Exportieren"
+    "source": "Laden",
+    "layout": "Gestalten",
+    "export": "Exportieren",
+    "install": "Installieren"
+  },
+  "install": {
+    "autoTab": "MT12-Einheit (Auto)",
+    "manualTab": "Manueller Ordner",
+    "autoDesc": "Erkennt das Radio automatisch und installiert die Skripte direkt auf der SD-Karte.",
+    "manualDesc": "Speichert die Skripte in einem Ordner und kopiert sie manuell auf die SD-Karte.",
+    "scanForRadio": "Radio suchen",
+    "scanning": "Suche…",
+    "noRadioFound": "Kein Radio gefunden",
+    "radioUnit": "Radio",
+    "scriptLang": "Skriptsprache",
+    "installToRadio": "Auf Radio installieren",
+    "chooseDir": "Ordner wählen…",
+    "noDirSelected": "Kein Ordner ausgewählt",
+    "saveScripts": "Skripte speichern",
+    "installedTitle": "Installierte Dateien:"
   },
   "topbar": {
     "save": "Speichern",
@@ -25,7 +42,9 @@
     "installScriptsTitle": "Lua-Skripte auf {{root}} installieren",
     "scriptLangTitle": "Skriptsprache auf der Radio",
     "editLayout": "Layout bearbeiten",
-    "csvPathPlaceholder": "/Pfad/zur/log.csv"
+    "csvPathPlaceholder": "/Pfad/zur/log.csv",
+    "manualDesc": "Wählen Sie eine CSV-Log-Datei von Ihrem Computer aus.",
+    "radioDesc": "Erkennt Ihre MT12 über USB und wählen Sie ein Log direkt von der Radio."
   },
   "layout": {
     "noSource": "Keine Quelle geladen",
@@ -94,7 +113,7 @@
     "rendered": "{{count}} Frame(s) gerendert",
     "settingsSaved": "Einstellungen gespeichert",
     "settingsSavedPath": "Einstellungen gespeichert: {{path}}",
-    "loadedSamples": "{{count}} Proben geladen ({{mode}})",
+    "loadedSamples": "{{count}} Proben geladen",
     "foundRadios": "{{count}} Funkquelle(n) gefunden",
     "noEdgeTx": "Keine EdgeTX-SD gefunden",
     "scriptsInstalled": "Skripte installiert ({{count}} Dateien):"
