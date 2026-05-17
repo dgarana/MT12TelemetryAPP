@@ -74,20 +74,25 @@ export interface DrawCtx {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function applyTransform(value: number, transform: string | undefined, stats: SourceStats | undefined, item: LayoutItem): number {
-  switch (transform) {
-    case "min": return stats?.min ?? value;
-    case "max": return stats?.max ?? value;
-    case "avg": return stats?.avg ?? value;
-    case "%": {
-      const rMin = item.range_min ?? -1024;
-      const rCenter = item.range_center ?? 0;
-      const rMax = item.range_max ?? 1024;
-      const half = value >= rCenter ? (rMax - rCenter) : (rCenter - rMin);
-      return half === 0 ? 0 : clamp(((value - rCenter) / half) * 100, -100, 100);
+function applyTransforms(value: number, transforms: string[] | undefined, stats: SourceStats | undefined, item: LayoutItem): number {
+  if (!transforms?.length) return value;
+  let v = value;
+  for (const t of transforms) {
+    switch (t) {
+      case "min": v = stats?.min ?? v; break;
+      case "max": v = stats?.max ?? v; break;
+      case "avg": v = stats?.avg ?? v; break;
+      case "%": {
+        const rMin = item.range_min ?? -1024;
+        const rCenter = item.range_center ?? 0;
+        const rMax = item.range_max ?? 1024;
+        const half = v >= rCenter ? (rMax - rCenter) : (rCenter - rMin);
+        v = half === 0 ? 0 : clamp(((v - rCenter) / half) * 100, -100, 100);
+        break;
+      }
     }
-    default: return value;
   }
+  return v;
 }
 
 function clamp(v: number, lo: number, hi: number): number {
@@ -394,8 +399,8 @@ function drawWidget(
   } else {
     const raw = valueForSource(state, item.source);
     const stats = runningStats[item.source];
-    const v = Math.round(applyTransform(raw, item.transform, stats, item));
-    const normDiv = item.transform === "%" ? 100 : 1024;
+    const v = Math.round(applyTransforms(raw, item.transforms, stats, item));
+    const normDiv = item.transforms?.includes("%") ? 100 : 1024;
     const norm = clamp(v / normDiv, -1, 1);
     switch (item.widget) {
       case "gauge":        drawGauge(ctx, item, norm, w, h, sc);       break;

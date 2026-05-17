@@ -237,6 +237,10 @@ function sanitizeLayout(layout: unknown) {
       outline_visible: userItem.outline_visible !== undefined ? userItem.outline_visible !== false : itemDefaults.outline_visible !== false,
       text_visible: userItem.text_visible !== undefined ? userItem.text_visible !== false : itemDefaults.text_visible !== false,
       shadow_visible: userItem.shadow_visible !== undefined ? userItem.shadow_visible !== false : itemDefaults.shadow_visible !== false,
+      ...(Array.isArray(userItem.transforms) ? { transforms: userItem.transforms as string[] } : {}),
+      ...(userItem.range_min !== undefined ? { range_min: Number(userItem.range_min) } : {}),
+      ...(userItem.range_center !== undefined ? { range_center: Number(userItem.range_center) } : {}),
+      ...(userItem.range_max !== undefined ? { range_max: Number(userItem.range_max) } : {}),
     };
   }
   return Object.keys(merged).length ? merged : {};

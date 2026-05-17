@@ -291,7 +291,7 @@ function App() {
   async function saveSettings() {
     try {
       const saved = await api.saveSettings(settings);
-      setSettings(saved);
+      setSettings((current) => ({ ...current, settings_path: saved.settings_path }));
       pushLog(saved.settings_path ? t("logs.settingsSavedPath", { path: saved.settings_path }) : t("logs.settingsSaved"));
     } catch (error) {
       pushLog(error instanceof Error ? error.message : String(error));

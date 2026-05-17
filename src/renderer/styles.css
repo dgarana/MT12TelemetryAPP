@@ -1224,6 +1224,57 @@ p {
 }
 .prop-select:focus { border-color: #4a7fa5; }
 
+.transforms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.transform-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.transform-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: grab;
+}
+.transform-row:active { cursor: grabbing; }
+.transform-options {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 20px;
+}
+.drag-handle {
+  color: #4a6070;
+  font-size: 14px;
+  user-select: none;
+  cursor: grab;
+}
+.transform-remove {
+  background: none;
+  border: none;
+  color: #4a6070;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+.transform-remove:hover { color: #e05555; }
+.transform-add {
+  align-self: flex-start;
+  background: none;
+  border: 1px dashed #2e3e4a;
+  border-radius: 4px;
+  color: #4a7fa5;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.transform-add:hover { border-color: #4a7fa5; color: #7ab8d8; }
+
 .prop-slider {
   flex: 1;
   height: 3px;

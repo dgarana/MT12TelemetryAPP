@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import type { AppMetadata, AppSettings, CsvSummary, FrameState, LayoutItem } from "../../shared/types";
@@ -55,6 +55,7 @@ export interface LayoutViewProps {
 
 export function LayoutView(props: LayoutViewProps) {
   const { t } = useTranslation();
+  const dragIndex = useRef<number>(-1);
   const {
     settings,
     metadata,
@@ -237,29 +238,61 @@ export function LayoutView(props: LayoutViewProps) {
                 ))}
               </select>
             </div>
-            {selectedItem.source !== "time" && (
-              <div className="prop-row">
-                <span className="prop-label">{t("layout.dataTransform")}</span>
-                <select className="prop-select" value={selectedItem.transform ?? "raw"} onChange={(e) => onUpdateSelectedItem("transform", e.target.value as LayoutItem["transform"])}>
-                  {(["raw", "min", "max", "avg", "%"] as const).map((v) => (
-                    <option key={v} value={v}>{t(`layout.transform_${v}`)}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {selectedItem.source !== "time" && selectedItem.transform === "%" && (
-              <div className="prop-row">
-                <span className="prop-label">{t("layout.rangeMin")}</span>
-                <input type="number" className="prop-number wide" value={selectedItem.range_min ?? -1024}
-                  onChange={(e) => onUpdateSelectedItem("range_min", Number(e.target.value))} />
-                <span className="prop-label center">{t("layout.rangeCenter")}</span>
-                <input type="number" className="prop-number wide" value={selectedItem.range_center ?? 0}
-                  onChange={(e) => onUpdateSelectedItem("range_center", Number(e.target.value))} />
-                <span className="prop-label center">{t("layout.rangeMax")}</span>
-                <input type="number" className="prop-number wide" value={selectedItem.range_max ?? 1024}
-                  onChange={(e) => onUpdateSelectedItem("range_max", Number(e.target.value))} />
-              </div>
-            )}
+            {selectedItem.source !== "time" && (() => {
+              const transforms = selectedItem.transforms ?? [];
+              const setTransforms = (next: string[]) => onUpdateSelectedItem("transforms", next);
+              const onDragStart = (i: number) => { dragIndex.current = i; };
+              const onDragOver = (e: React.DragEvent, i: number) => {
+                e.preventDefault();
+                const from = dragIndex.current;
+                if (from === i || from === -1) return;
+                const next = [...transforms];
+                next.splice(i, 0, next.splice(from, 1)[0]);
+                dragIndex.current = i;
+                setTransforms(next);
+              };
+              return (
+                <details className="inspector-section" open>
+                  <summary><span className="section-dot active" />{t("layout.sectionDataPipeline")}</summary>
+                  <div className="section-body">
+                    <div className="transforms-list">
+                      {transforms.map((tr, i) => (
+                        <div key={i} className="transform-item">
+                          <div className="transform-row" draggable
+                            onDragStart={() => onDragStart(i)}
+                            onDragOver={(e) => onDragOver(e, i)}
+                            onDragEnd={() => { dragIndex.current = -1; }}
+                          >
+                            <span className="drag-handle">⠿</span>
+                            <select className="prop-select" value={tr}
+                              onChange={(e) => { const next = [...transforms]; next[i] = e.target.value; setTransforms(next); }}>
+                              {(["min", "max", "avg", "%"] as const).map((v) => (
+                                <option key={v} value={v}>{t(`layout.transform_${v}`)}</option>
+                              ))}
+                            </select>
+                            <button className="transform-remove" onClick={() => setTransforms(transforms.filter((_, idx) => idx !== i))}>×</button>
+                          </div>
+                          {tr === "%" && (
+                            <div className="transform-options">
+                              <span className="prop-label">{t("layout.rangeMin")}</span>
+                              <input type="number" className="prop-number wide" value={selectedItem.range_min ?? -1024}
+                                onChange={(e) => onUpdateSelectedItem("range_min", Number(e.target.value))} />
+                              <span className="prop-label center">{t("layout.rangeCenter")}</span>
+                              <input type="number" className="prop-number wide" value={selectedItem.range_center ?? 0}
+                                onChange={(e) => onUpdateSelectedItem("range_center", Number(e.target.value))} />
+                              <span className="prop-label center">{t("layout.rangeMax")}</span>
+                              <input type="number" className="prop-number wide" value={selectedItem.range_max ?? 1024}
+                                onChange={(e) => onUpdateSelectedItem("range_max", Number(e.target.value))} />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      <button className="transform-add" onClick={() => setTransforms([...transforms, "min"])}>+ {t("layout.addTransform")}</button>
+                    </div>
+                  </div>
+                </details>
+              );
+            })()}
 
             {/* ── Transformación ── */}
             <details className="inspector-section" open>
