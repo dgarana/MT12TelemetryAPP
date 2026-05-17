@@ -43,13 +43,13 @@ export function WidgetPreview(props: {
         <strong className="widget-value" style={{ color: item.accent_color }}>T {(timeMs / 1000).toFixed(2)}s</strong>
       </div>
     );
-  } else if (item.widget === "wheel") {
+  } else if (item.widget === "gauge") {
     body = (
-      <div className="widget-wheel">
-        <div className="wheel-ring">
-          <div className="wheel-spoke" style={{ transform: `rotate(${value * 150}deg)` }} />
-          <div className="wheel-hub" />
-          <div className="wheel-outline" />
+      <div className="widget-gauge">
+        <div className="gauge-ring">
+          <div className="gauge-spoke" style={{ transform: `rotate(${value * 150}deg)` }} />
+          <div className="gauge-hub" />
+          <div className="gauge-outline" />
         </div>
         <strong>{formatValue(value)}</strong>
       </div>

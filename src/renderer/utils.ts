@@ -42,7 +42,7 @@ export const defaultSettings: AppSettings = {
 
 export const fallbackMetadata: AppMetadata = {
   sources: ["time", "ch1", "ch2", "ch3", "ch4"],
-  channel_widget_types: ["wheel", "vertical_bar", "bar", "circle", "text"],
+  channel_widget_types: ["gauge", "vertical_bar", "bar", "text"],
   time_widget_types: ["text"],
 };
 
@@ -50,7 +50,7 @@ export const fallbackItem: LayoutItem = {
   source: "ch1",
   name: "ch1 1",
   label: "CH1",
-  widget: "wheel",
+  widget: "gauge",
   x: 0.15,
   y: 0.78,
   scale_x: 1,
@@ -111,8 +111,7 @@ export function widgetSize(widget: string) {
   const sizes: Record<string, [number, number]> = {
     text: [280, 52],
     bar: [220, 48],
-    circle: [150, 150],
-    wheel: [250, 250],
+    gauge: [250, 250],
     vertical_bar: [130, 330],
   };
   return sizes[widget] || [180, 60];
@@ -135,24 +134,24 @@ export type ColorKey = "accent_color" | "negative_color" | "positive_color" | "t
 export function colorControlLabel(item: LayoutItem, key: ColorKey): string | null {
   if (item.source === "time" || item.widget === "text") {
     const labels: Record<ColorKey, string | null> = {
-      accent_color: "colors.value",
+      accent_color: null,
       negative_color: null,
       positive_color: null,
-      text_color: "colors.labelText",
+      text_color: null,
       bg_color: "colors.boxFill",
       outline_color: "colors.boxOutline",
     };
     return labels[key];
   }
 
-  if (item.widget === "wheel") {
+  if (item.widget === "gauge") {
     const labels: Record<ColorKey, string | null> = {
       accent_color: "colors.spokeHub",
       negative_color: null,
       positive_color: null,
-      text_color: "colors.valueText",
-      bg_color: "colors.wheelFill",
-      outline_color: "colors.wheelOutline",
+      text_color: null,
+      bg_color: "colors.gaugeFill",
+      outline_color: "colors.gaugeOutline",
     };
     return labels[key];
   }
@@ -177,18 +176,6 @@ export function colorControlLabel(item: LayoutItem, key: ColorKey): string | nul
       text_color: "colors.centerMark",
       bg_color: "colors.trackFill",
       outline_color: "colors.trackOutline",
-    };
-    return labels[key];
-  }
-
-  if (item.widget === "circle") {
-    const labels: Record<ColorKey, string | null> = {
-      accent_color: "colors.needleHub",
-      negative_color: null,
-      positive_color: null,
-      text_color: "colors.valueText",
-      bg_color: "colors.circleFill",
-      outline_color: "colors.circleOutline",
     };
     return labels[key];
   }

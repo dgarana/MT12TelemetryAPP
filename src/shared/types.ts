@@ -86,6 +86,10 @@ export type LayoutItem = {
   outline_visible?: boolean;
   text_visible?: boolean;
   shadow_visible?: boolean;
+  transform?: string;
+  range_min?: number;
+  range_center?: number;
+  range_max?: number;
 };
 
 export type PreviewItem = {

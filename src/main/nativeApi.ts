@@ -2,6 +2,7 @@ import { copyFileSync, createWriteStream, chmodSync, existsSync, mkdirSync, read
 import { execSync, spawn } from "node:child_process";
 import { app } from "electron";
 import { makeCanvas, renderFrameToCanvas } from "./frameRenderer";
+import { buildRunningStatsArray, getRunningStatsAt } from "../shared/widgetDraw";
 import https from "node:https";
 import os from "node:os";
 import path from "node:path";
@@ -24,7 +25,7 @@ const APP_NAME = "MT12TelemetryAPP";
 const SETTINGS_FILENAME = "overlay_ui_settings.json";
 const DEFAULT_SOURCES = ["time", "ch1", "ch2", "ch3", "ch4"];
 const TIME_SOURCE = "time";
-const CHANNEL_WIDGET_TYPES = ["wheel", "vertical_bar", "bar", "circle", "text"];
+const CHANNEL_WIDGET_TYPES = ["gauge", "vertical_bar", "bar", "text"];
 const TIME_WIDGET_TYPES = ["text"];
 
 function clamp(value: number, low: number, high: number) {
@@ -76,7 +77,7 @@ function defaultItemForSource(source: string, itemId: string) {
       source: "ch1",
       name: "ch1 1",
       label: "CH1",
-      widget: "wheel",
+      widget: "gauge",
       x: 0.15,
       y: 0.78,
       scale_x: 1,
@@ -181,7 +182,7 @@ function defaultItemForSource(source: string, itemId: string) {
     base.negative_color = "#ff5c5c";
     base.positive_color = "#40d68c";
   } else if (source === "ch1") {
-    base.widget = "wheel";
+    base.widget = "gauge";
     base.accent_color = "#ffd25a";
   } else if (source === TIME_SOURCE) {
     base.widget = "text";
@@ -343,6 +344,7 @@ function loadSamples(csvPath: string, offsetMs = 0): LoadedCsv {
   if (!sources.length) throw new Error("CSV contains no telemetry columns.");
   const index = Object.fromEntries(headers.map((header, idx) => [header, idx]));
   let firstTick: number | null = null;
+
   const samples: Sample[] = [];
   for (const line of lines.slice(1)) {
     const row = parseCsvLine(line);
@@ -703,6 +705,7 @@ async function renderOverlay(payload: Record<string, unknown>, emit: EmitFn) {
   const layout = (payload.layout ?? {}) as Record<string, unknown>;
 
   const { samples } = loadSamples(csvPath, offsetMs);
+  const runningStatsArray = buildRunningStatsArray(samples);
   const lastMs = samples[samples.length - 1].time_ms;
   const totalMs = durationMs > 0 ? Math.min(durationMs, lastMs) : lastMs;
   const frameCount = Math.max(1, Math.ceil((totalMs / 1000) * fps));
@@ -745,7 +748,8 @@ async function renderOverlay(payload: Record<string, unknown>, emit: EmitFn) {
       for (let i = 0; i < frameCount; i++) {
         const timeMs = i * msPerFrame;
         const state = interpolateState(samples, timeMs);
-        renderFrameToCanvas(canvas, layout, state, timeMs, width, height);
+        const runningStats = getRunningStatsAt(runningStatsArray, samples, timeMs);
+        renderFrameToCanvas(canvas, layout, state, runningStats, timeMs, width, height);
         const png = await canvas.encode("png");
         if (!stdin.write(png)) {
           await new Promise<void>((res, rej) => { stdin.once("drain", res); stdin.once("error", rej); });
@@ -781,7 +785,8 @@ async function renderOverlay(payload: Record<string, unknown>, emit: EmitFn) {
   for (let i = 0; i < frameCount; i++) {
     const timeMs = i * msPerFrame;
     const state = interpolateState(samples, timeMs);
-    renderFrameToCanvas(canvas, layout, state, timeMs, width, height);
+    const runningStats = getRunningStatsAt(runningStatsArray, samples, timeMs);
+    renderFrameToCanvas(canvas, layout, state, runningStats, timeMs, width, height);
     const png = await canvas.encode("png");
     writeFileSync(path.join(outputDir, `frame_${String(i).padStart(6, "0")}.png`), png);
     const now = Date.now();

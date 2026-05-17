@@ -1,13 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Copy,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import type { AppMetadata, AppSettings, CsvSummary, FrameState, LayoutItem } from "../../shared/types";
+import type { RunningStats } from "../../shared/widgetDraw";
 import { Field } from "../components/Field";
-import { WidgetPreview } from "../components/WidgetPreview";
+import { WidgetCanvas } from "../components/WidgetCanvas";
 import {
   clamp,
   colorControlLabel,
@@ -16,13 +13,14 @@ import {
   widgetTypesForSource,
   widgetTypeLabel,
 } from "../utils";
-import type { ColorKey } from "../utils";
+import type { ColorKey, HandleId } from "../utils";
 
 export interface LayoutViewProps {
   settings: AppSettings;
   metadata: AppMetadata;
   summary: CsvSummary | null;
   previewState: FrameState;
+  runningStats: RunningStats;
   previewTime: number;
   selectedItemId: string;
   selectedItem: LayoutItem | undefined;
@@ -62,6 +60,7 @@ export function LayoutView(props: LayoutViewProps) {
     metadata,
     summary,
     previewState,
+    runningStats,
     previewTime,
     selectedItemId,
     selectedItem,
@@ -120,20 +119,38 @@ export function LayoutView(props: LayoutViewProps) {
                 transformOrigin: "center center",
               } as React.CSSProperties}
             >
-              <div className="electron-preview-layer">
-                {layoutItems.map(([id, item]) => (
-                  <WidgetPreview
-                    key={id}
-                    item={item}
-                    state={previewState}
-                    timeMs={previewTime}
-                    selected={id === selectedItemId}
-                    bounds={boundsForPreviewItem(id, item)}
-                    frameWidth={outputWidth}
-                    frameHeight={outputHeight}
-                    name={itemName(id, item)}
-                  />
-                ))}
+              <WidgetCanvas
+                layout={settings.layout}
+                state={previewState}
+                runningStats={runningStats}
+                timeMs={previewTime}
+                width={outputWidth}
+                height={outputHeight}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+              />
+              {/* Editor chrome: widget name labels + selection handles */}
+              <div className="editor-chrome-layer">
+                {layoutItems.map(([id, item]) => {
+                  const [l, t, r, b] = boundsForPreviewItem(id, item);
+                  const sel = id === selectedItemId;
+                  return (
+                    <div
+                      key={id}
+                      className={`widget-chrome${sel ? " selected" : ""}`}
+                      style={{
+                        left: `${(l / outputWidth) * 100}%`,
+                        top: `${(t / outputHeight) * 100}%`,
+                        width: `${((r - l) / outputWidth) * 100}%`,
+                        height: `${((b - t) / outputHeight) * 100}%`,
+                      }}
+                    >
+                      <span className="widget-name">{itemName(id, item)}</span>
+                      {sel && (["nw","n","ne","e","se","s","sw","w"] as HandleId[]).map((h) => (
+                        <div key={h} className={`rh rh-${h}`} />
+                      ))}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : (
@@ -180,9 +197,9 @@ export function LayoutView(props: LayoutViewProps) {
 
       <aside className="inspector-sidebar">
         <div className="widget-toolbar">
-          <button onClick={onAddWidget}><Plus size={15} /> {t("layout.add")}</button>
-          <button onClick={onDuplicateWidget} disabled={!selectedItem}><Copy size={15} /> {t("layout.duplicate")}</button>
-          <button onClick={onDeleteWidget} disabled={!selectedItem}><Trash2 size={15} /> {t("layout.delete")}</button>
+          <button onClick={onAddWidget}><Plus size={18} /> {t("layout.add")}</button>
+          <button onClick={onDuplicateWidget} disabled={!selectedItem}>{t("layout.duplicate")}</button>
+          <button onClick={onDeleteWidget} disabled={!selectedItem}>{t("layout.delete")}</button>
           <button onClick={onResetLayout}>{t("layout.reset")}</button>
         </div>
 
@@ -198,98 +215,145 @@ export function LayoutView(props: LayoutViewProps) {
 
         {selectedItem ? (
           <div className="inspector">
-            <Field label={t("layout.name")} value={selectedItem.name} onChange={(v) => onUpdateSelectedItem("name", v)} />
-            <Field label={t("layout.label")} value={selectedItem.label} onChange={(v) => onUpdateSelectedItem("label", v)} />
-            <label className="field">
-              <span>{t("layout.source")}</span>
-              <select value={selectedItem.source} onChange={(e) => onChangeSelectedSource(e.target.value)}>
+
+            {/* ── Identity ── */}
+            <input
+              className="inspector-name-input"
+              value={selectedItem.name}
+              onChange={(e) => onUpdateSelectedItem("name", e.target.value)}
+              placeholder={t("layout.name")}
+            />
+            <div className="prop-row">
+              <span className="prop-label">{t("layout.source")}</span>
+              <select className="prop-select" value={selectedItem.source} onChange={(e) => onChangeSelectedSource(e.target.value)}>
                 {metadata.sources.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-            </label>
-            <label className="field">
-              <span>{t("layout.widgetType")}</span>
-              <select value={selectedItem.widget} onChange={(e) => onUpdateSelectedItem("widget", e.target.value)}>
+            </div>
+            <div className="prop-row">
+              <span className="prop-label">{t("layout.widgetType")}</span>
+              <select className="prop-select" value={selectedItem.widget} onChange={(e) => onUpdateSelectedItem("widget", e.target.value)}>
                 {widgetTypesForSource(metadata, selectedItem.source).map((w) => (
                   <option key={w} value={w}>{widgetTypeLabel(w)}</option>
                 ))}
               </select>
-            </label>
-            <Field label="X" value={selectedItem.x} onChange={(v) => onUpdateSelectedNumber("x", v, 0.05, 0.95)} />
-            <Field label="Y" value={selectedItem.y} onChange={(v) => onUpdateSelectedNumber("y", v, 0.05, 0.95)} />
-            {(() => {
-              const [baseW, baseH] = widgetSize(selectedItem.widget);
-              const sc = Math.max(0.2, Math.min(outputWidth / 1920, outputHeight / 1080));
-              const pxW = Math.round(Math.max(32, baseW * sc * selectedItem.scale_x));
-              const pxH = Math.round(Math.max(24, baseH * sc * selectedItem.scale_y));
-              return (
-                <>
-                  <Field label={t("layout.widthPx")} value={pxW} onChange={(v) => {
-                    const px = Math.max(1, Number(v));
-                    if (Number.isFinite(px)) onUpdateSelectedItem("scale_x", clamp(px / (baseW * sc), 0.2, 12));
-                  }} />
-                  <Field label={t("layout.heightPx")} value={pxH} onChange={(v) => {
-                    const px = Math.max(1, Number(v));
-                    if (Number.isFinite(px)) onUpdateSelectedItem("scale_y", clamp(px / (baseH * sc), 0.2, 12));
-                  }} />
-                </>
-              );
-            })()}
-            <label className="check">
-              <input
-                type="checkbox"
-                checked={selectedItem.shadow_visible !== false}
-                onChange={(e) => onUpdateSelectedItem("shadow_visible", e.target.checked)}
-              />
-              {t("layout.shadow")}
-            </label>
-            {(
-              [
-                "accent_color",
-                "negative_color",
-                "positive_color",
-                "text_color",
-                "bg_color",
-                "outline_color",
-              ] as ColorKey[]
-            ).map((key) => [key, colorControlLabel(selectedItem, key)] as const)
-            .filter((entry): entry is readonly [ColorKey, string] => entry[1] !== null)
-            .map(([key, labelKey]) => {
-              const isOff =
-                (key === "bg_color" && selectedItem.bg_visible === false) ||
-                (key === "outline_color" && selectedItem.outline_visible === false) ||
-                (key === "text_color" && selectedItem.text_visible === false);
-              const hasToggle = key === "bg_color" || key === "outline_color" || key === "text_color";
-              const toggleKey =
-                key === "bg_color" ? "bg_visible" :
-                key === "outline_color" ? "outline_visible" : "text_visible";
-              return (
-              <label
-                className="field color-field"
-                key={key}
-                style={isOff ? { opacity: 0.35 } : undefined}
-              >
-                <span>
-                  {hasToggle ? (
+            </div>
+            {selectedItem.source !== "time" && (
+              <div className="prop-row">
+                <span className="prop-label">{t("layout.dataTransform")}</span>
+                <select className="prop-select" value={selectedItem.transform ?? "raw"} onChange={(e) => onUpdateSelectedItem("transform", e.target.value as LayoutItem["transform"])}>
+                  {(["raw", "min", "max", "avg", "%"] as const).map((v) => (
+                    <option key={v} value={v}>{t(`layout.transform_${v}`)}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {selectedItem.source !== "time" && selectedItem.transform === "%" && (
+              <div className="prop-row">
+                <span className="prop-label">{t("layout.rangeMin")}</span>
+                <input type="number" className="prop-number wide" value={selectedItem.range_min ?? -1024}
+                  onChange={(e) => onUpdateSelectedItem("range_min", Number(e.target.value))} />
+                <span className="prop-label center">{t("layout.rangeCenter")}</span>
+                <input type="number" className="prop-number wide" value={selectedItem.range_center ?? 0}
+                  onChange={(e) => onUpdateSelectedItem("range_center", Number(e.target.value))} />
+                <span className="prop-label center">{t("layout.rangeMax")}</span>
+                <input type="number" className="prop-number wide" value={selectedItem.range_max ?? 1024}
+                  onChange={(e) => onUpdateSelectedItem("range_max", Number(e.target.value))} />
+              </div>
+            )}
+
+            {/* ── Transformación ── */}
+            <details className="inspector-section" open>
+              <summary><span className="section-dot active" />{t("layout.sectionTransform")}</summary>
+              <div className="section-body">
+                <div className="prop-row">
+                  <span className="prop-label">X</span>
+                  <input type="range" className="prop-slider" min={0.05} max={0.95} step={0.001}
+                    value={selectedItem.x}
+                    onChange={(e) => onUpdateSelectedNumber("x", e.target.value, 0.05, 0.95)} />
+                  <input type="number" className="prop-number" min={0.05} max={0.95} step={0.001}
+                    value={Number(selectedItem.x).toFixed(3)}
+                    onChange={(e) => onUpdateSelectedNumber("x", e.target.value, 0.05, 0.95)} />
+                </div>
+                <div className="prop-row">
+                  <span className="prop-label">Y</span>
+                  <input type="range" className="prop-slider" min={0.05} max={0.95} step={0.001}
+                    value={selectedItem.y}
+                    onChange={(e) => onUpdateSelectedNumber("y", e.target.value, 0.05, 0.95)} />
+                  <input type="number" className="prop-number" min={0.05} max={0.95} step={0.001}
+                    value={Number(selectedItem.y).toFixed(3)}
+                    onChange={(e) => onUpdateSelectedNumber("y", e.target.value, 0.05, 0.95)} />
+                </div>
+                {(() => {
+                  const [baseW, baseH] = widgetSize(selectedItem.widget);
+                  const sc = Math.max(0.2, Math.min(outputWidth / 1920, outputHeight / 1080));
+                  const pxW = Math.round(Math.max(32, baseW * sc * selectedItem.scale_x));
+                  const pxH = Math.round(Math.max(24, baseH * sc * selectedItem.scale_y));
+                  return (
                     <>
-                      <input
-                        type="checkbox"
-                        checked={!isOff}
-                        style={{ width: "auto", minHeight: "auto", marginRight: 5 }}
-                        onChange={(e) => onUpdateSelectedItem(toggleKey as keyof LayoutItem, e.target.checked as LayoutItem[keyof LayoutItem])}
-                      />
-                      {t(labelKey)}
+                      <div className="prop-row">
+                        <span className="prop-label">{t("layout.widthPx")}</span>
+                        <input type="number" className="prop-number wide" value={pxW} min={1}
+                          onChange={(e) => {
+                            const px = Math.max(1, Number(e.target.value));
+                            if (Number.isFinite(px)) onUpdateSelectedItem("scale_x", clamp(px / (baseW * sc), 0.2, 12));
+                          }} />
+                        <span className="prop-label center">{t("layout.heightPx")}</span>
+                        <input type="number" className="prop-number wide" value={pxH} min={1}
+                          onChange={(e) => {
+                            const px = Math.max(1, Number(e.target.value));
+                            if (Number.isFinite(px)) onUpdateSelectedItem("scale_y", clamp(px / (baseH * sc), 0.2, 12));
+                          }} />
+                      </div>
                     </>
-                  ) : t(labelKey)}
-                </span>
-                <input
-                  type="color"
-                  disabled={isOff}
-                  value={String(selectedItem[key as keyof LayoutItem])}
-                  onChange={(e) => onUpdateSelectedItem(key as keyof LayoutItem, e.target.value as never)}
+                  );
+                })()}
+              </div>
+            </details>
+
+            {/* ── Apariencia ── */}
+            <details className="inspector-section" open>
+              <summary>
+                <span
+                  className={`section-dot${selectedItem.shadow_visible !== false ? " active" : ""}`}
+                  title={t("layout.shadow")}
+                  onClick={(e) => { e.preventDefault(); onUpdateSelectedItem("shadow_visible", selectedItem.shadow_visible === false); }}
                 />
-              </label>
-              );
-            })}
+                {t("layout.appearance")}
+              </summary>
+              <div className="section-body">
+                <div className="color-grid">
+                  {(["accent_color","negative_color","positive_color","text_color","bg_color","outline_color"] as ColorKey[])
+                    .map((key) => [key, colorControlLabel(selectedItem, key)] as const)
+                    .filter((entry): entry is readonly [ColorKey, string] => entry[1] !== null)
+                    .map(([key, labelKey]) => {
+                      const isOff =
+                        (key === "bg_color" && selectedItem.bg_visible === false) ||
+                        (key === "outline_color" && selectedItem.outline_visible === false);
+                      const hasToggle = key === "bg_color" || key === "outline_color";
+                      const toggleKey = key === "bg_color" ? "bg_visible" : "outline_visible";
+                      return (
+                        <div key={key} className={`color-cell${isOff ? " off" : ""}`}>
+                          <div className="color-cell-top">
+                            {hasToggle && (
+                              <input type="checkbox" className="color-cell-toggle"
+                                checked={!isOff}
+                                onChange={(e) => onUpdateSelectedItem(toggleKey as keyof LayoutItem, e.target.checked as LayoutItem[keyof LayoutItem])}
+                              />
+                            )}
+                            <input type="color" className="color-cell-swatch"
+                              disabled={isOff}
+                              value={String(selectedItem[key as keyof LayoutItem])}
+                              onChange={(e) => onUpdateSelectedItem(key as keyof LayoutItem, e.target.value as never)}
+                            />
+                          </div>
+                          <span className="color-cell-label">{t(labelKey)}</span>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            </details>
+
           </div>
         ) : (
           <div className="empty small">{t("layout.selectOrAdd")}</div>

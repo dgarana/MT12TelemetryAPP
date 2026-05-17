@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FrameState, LayoutItem } from "../../shared/types";
-import { itemBounds, itemName } from "../utils";
-import { WidgetPreview } from "./WidgetPreview";
+import { WidgetCanvas } from "./WidgetCanvas";
 
 type CapturePayload = {
   layout: Record<string, LayoutItem>;
@@ -34,22 +33,14 @@ export function CaptureRenderer() {
 
   return (
     <div className="capture-root" style={{ width: payload.width, height: payload.height }}>
-      <div className="capture-stage">
-        {Object.entries(payload.layout ?? {}).map(([id, item]) => (
-          <WidgetPreview
-            key={id}
-            item={item}
-            state={payload.state}
-            timeMs={payload.timeMs}
-            selected={false}
-            bounds={itemBounds(item, payload.width, payload.height)}
-            frameWidth={payload.width}
-            frameHeight={payload.height}
-            name={itemName(id, item)}
-            showEditorChrome={false}
-          />
-        ))}
-      </div>
+      <WidgetCanvas
+        layout={payload.layout}
+        state={payload.state}
+        timeMs={payload.timeMs}
+        width={payload.width}
+        height={payload.height}
+        style={{ display: "block", width: payload.width, height: payload.height }}
+      />
     </div>
   );
 }

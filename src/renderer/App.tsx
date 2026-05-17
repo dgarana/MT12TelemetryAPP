@@ -34,6 +34,7 @@ import {
   widgetTypesForSource,
 } from "./utils";
 import type { HandleId, ResizePreview, ResizingState } from "./utils";
+import { buildRunningStatsArray, getRunningStatsAt, type RunningStats } from "../shared/widgetDraw";
 import { CaptureRenderer } from "./components/CaptureRenderer";
 import { LangDropdown } from "./components/LangDropdown";
 import { SourceView } from "./views/SourceView";
@@ -52,6 +53,7 @@ function App() {
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [summary, setSummary] = useState<CsvSummary | null>(null);
   const [previewSamples, setPreviewSamples] = useState<CsvSample[]>([]);
+  const [runningStatsArray, setRunningStatsArray] = useState<RunningStats[]>([]);
   const [previewState, setPreviewState] = useState<FrameState>({});
   const [previewTime, setPreviewTime] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
@@ -90,6 +92,10 @@ function App() {
 
   const layoutItems = useMemo(() => Object.entries(settings.layout ?? {}), [settings.layout]);
   const selectedItem = selectedItemId ? settings.layout[selectedItemId] : undefined;
+  const runningStats: RunningStats = useMemo(
+    () => getRunningStatsAt(runningStatsArray, previewSamples, previewTime),
+    [runningStatsArray, previewSamples, previewTime],
+  );
   const ffmpegReady = Boolean(String(settings.ffmpeg_path ?? "").trim());
   const outputWidth = Math.max(1, numeric(settings.width, 1920));
   const outputHeight = Math.max(1, numeric(settings.height, 1080));
@@ -183,14 +189,16 @@ function App() {
         offset_ms: sourceSettings.offset_ms,
       });
       setSummary(loaded);
-      setPreviewSamples(loaded.samples || []);
+      const loadedSamples = loaded.samples || [];
+      setPreviewSamples(loadedSamples);
+      setRunningStatsArray(buildRunningStatsArray(loadedSamples));
       setMetadata((current) => ({
         ...current,
         sources: loaded.sources.length ? loaded.sources : current.sources,
       }));
       const midPoint = loaded.duration_ms / 2;
       setPreviewTime(midPoint);
-      updatePreviewFromSamples(loaded.samples || [], midPoint);
+      updatePreviewFromSamples(loadedSamples, midPoint);
       pushSourceLog(t("logs.loadedSamples", { count: loaded.sample_count }));
     } catch (error) {
       pushSourceLog(error instanceof Error ? error.message : String(error));
@@ -789,6 +797,7 @@ function App() {
           metadata={metadata}
           summary={summary}
           previewState={previewState}
+          runningStats={runningStats}
           previewTime={previewTime}
           selectedItemId={selectedItemId}
           selectedItem={selectedItem}
