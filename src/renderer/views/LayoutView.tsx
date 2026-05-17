@@ -298,6 +298,7 @@ export function LayoutView(props: LayoutViewProps) {
             <details className="inspector-section" open>
               <summary><span className="section-dot active" />{t("layout.sectionTransform")}</summary>
               <div className="section-body">
+                <div className="prop-subgroup-label">{t("layout.subgroupPosition")}</div>
                 <div className="prop-row">
                   <span className="prop-label">X</span>
                   <input type="range" className="prop-slider" min={0.05} max={0.95} step={0.001}
@@ -321,21 +322,28 @@ export function LayoutView(props: LayoutViewProps) {
                   const sc = Math.max(0.2, Math.min(outputWidth / 1920, outputHeight / 1080));
                   const pxW = Math.round(Math.max(32, baseW * sc * selectedItem.scale_x));
                   const pxH = Math.round(Math.max(24, baseH * sc * selectedItem.scale_y));
+                  const maxW = Math.round(baseW * sc * 12);
+                  const maxH = Math.round(baseH * sc * 12);
+                  const minW = Math.round(Math.max(32, baseW * sc * 0.2));
+                  const minH = Math.round(Math.max(24, baseH * sc * 0.2));
+                  const updateW = (px: number) => { if (Number.isFinite(px) && px >= 1) onUpdateSelectedItem("scale_x", clamp(px / (baseW * sc), 0.2, 12)); };
+                  const updateH = (px: number) => { if (Number.isFinite(px) && px >= 1) onUpdateSelectedItem("scale_y", clamp(px / (baseH * sc), 0.2, 12)); };
                   return (
                     <>
+                      <div className="prop-subgroup-label">{t("layout.subgroupSize")}</div>
                       <div className="prop-row">
-                        <span className="prop-label">{t("layout.widthPx")}</span>
-                        <input type="number" className="prop-number wide" value={pxW} min={1}
-                          onChange={(e) => {
-                            const px = Math.max(1, Number(e.target.value));
-                            if (Number.isFinite(px)) onUpdateSelectedItem("scale_x", clamp(px / (baseW * sc), 0.2, 12));
-                          }} />
-                        <span className="prop-label center">{t("layout.heightPx")}</span>
-                        <input type="number" className="prop-number wide" value={pxH} min={1}
-                          onChange={(e) => {
-                            const px = Math.max(1, Number(e.target.value));
-                            if (Number.isFinite(px)) onUpdateSelectedItem("scale_y", clamp(px / (baseH * sc), 0.2, 12));
-                          }} />
+                        <span className="prop-label">W</span>
+                        <input type="range" className="prop-slider" min={minW} max={maxW} step={1}
+                          value={pxW} onChange={(e) => updateW(Number(e.target.value))} />
+                        <input type="number" className="prop-number" min={1} value={pxW}
+                          onChange={(e) => updateW(Number(e.target.value))} />
+                      </div>
+                      <div className="prop-row">
+                        <span className="prop-label">H</span>
+                        <input type="range" className="prop-slider" min={minH} max={maxH} step={1}
+                          value={pxH} onChange={(e) => updateH(Number(e.target.value))} />
+                        <input type="number" className="prop-number" min={1} value={pxH}
+                          onChange={(e) => updateH(Number(e.target.value))} />
                       </div>
                     </>
                   );
@@ -366,6 +374,7 @@ export function LayoutView(props: LayoutViewProps) {
                       const toggleKey = key === "bg_color" ? "bg_visible" : "outline_visible";
                       return (
                         <div key={key} className={`color-cell${isOff ? " off" : ""}`}>
+                          <span className="color-cell-label">{t(labelKey)}</span>
                           <div className="color-cell-top">
                             {hasToggle && (
                               <input type="checkbox" className="color-cell-toggle"
@@ -373,13 +382,16 @@ export function LayoutView(props: LayoutViewProps) {
                                 onChange={(e) => onUpdateSelectedItem(toggleKey as keyof LayoutItem, e.target.checked as LayoutItem[keyof LayoutItem])}
                               />
                             )}
-                            <input type="color" className="color-cell-swatch"
-                              disabled={isOff}
-                              value={String(selectedItem[key as keyof LayoutItem])}
-                              onChange={(e) => onUpdateSelectedItem(key as keyof LayoutItem, e.target.value as never)}
-                            />
+                            <div className="color-cell-swatch-wrap"
+                              style={{ "--swatch-color": String(selectedItem[key as keyof LayoutItem]) } as React.CSSProperties}
+                            >
+                              <input type="color" className="color-cell-swatch"
+                                disabled={isOff}
+                                value={String(selectedItem[key as keyof LayoutItem])}
+                                onChange={(e) => onUpdateSelectedItem(key as keyof LayoutItem, e.target.value as never)}
+                              />
+                            </div>
                           </div>
-                          <span className="color-cell-label">{t(labelKey)}</span>
                         </div>
                       );
                     })}

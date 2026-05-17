@@ -11,6 +11,13 @@ export async function encodeCanvasPng(canvas: Canvas): Promise<Buffer> {
   return canvas.encode("png");
 }
 
+export function getRawFrame(canvas: Canvas): Buffer {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ctx = canvas.getContext("2d") as any;
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height) as { data: Uint8ClampedArray };
+  return Buffer.from(imageData.data.buffer);
+}
+
 export function renderFrameToCanvas(
   canvas: Canvas,
   layout: Record<string, unknown>,

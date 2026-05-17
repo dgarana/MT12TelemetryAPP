@@ -62,6 +62,8 @@
     "widthPx": "Ancho px",
     "heightPx": "Alto px",
     "sectionTransform": "Transformación",
+    "subgroupPosition": "Posición",
+    "subgroupSize": "Tamaño",
     "sectionDataPipeline": "Pipeline de datos",
     "appearance": "Apariencia",
     "shadow": "Sombra",

@@ -1,7 +1,7 @@
 import { copyFileSync, createWriteStream, chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { execSync, spawn } from "node:child_process";
 import { app } from "electron";
-import { makeCanvas, renderFrameToCanvas } from "./frameRenderer";
+import { makeCanvas, renderFrameToCanvas, getRawFrame } from "./frameRenderer";
 import { buildRunningStatsArray, getRunningStatsAt } from "../shared/widgetDraw";
 import https from "node:https";
 import os from "node:os";
@@ -725,10 +725,12 @@ async function renderOverlay(payload: Record<string, unknown>, emit: EmitFn) {
 
     mkdirSync(path.dirname(videoOutput), { recursive: true });
 
-    // Pipe PNG frames directly into ffmpeg stdin — no temp files, no GPU round-trip.
+    // Pipe raw RGBA frames into ffmpeg — no PNG compression overhead.
     const proc = spawn(ffmpegPath, [
       "-y",
-      "-f", "image2pipe", "-vcodec", "png", "-r", String(fps), "-i", "pipe:0",
+      "-f", "rawvideo", "-pixel_format", "rgba",
+      "-video_size", `${width}x${height}`, "-framerate", String(fps),
+      "-i", "pipe:0",
       "-c:v", "prores_ks", "-profile:v", "4444", "-pix_fmt", "yuva444p10le",
       "-vendor", "apl0", "-an",
       videoOutput,
@@ -754,8 +756,8 @@ async function renderOverlay(payload: Record<string, unknown>, emit: EmitFn) {
         const state = interpolateState(samples, timeMs);
         const runningStats = getRunningStatsAt(runningStatsArray, samples, timeMs);
         renderFrameToCanvas(canvas, layout, state, runningStats, timeMs, width, height);
-        const png = await canvas.encode("png");
-        if (!stdin.write(png)) {
+        const raw = getRawFrame(canvas);
+        if (!stdin.write(raw)) {
           await new Promise<void>((res, rej) => { stdin.once("drain", res); stdin.once("error", rej); });
         }
         const now = Date.now();

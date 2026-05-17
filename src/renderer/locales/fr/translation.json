@@ -62,6 +62,8 @@
     "widthPx": "Largeur px",
     "heightPx": "Hauteur px",
     "sectionTransform": "Transformation",
+    "subgroupPosition": "Position",
+    "subgroupSize": "Taille",
     "sectionDataPipeline": "Pipeline de données",
     "appearance": "Apparence",
     "shadow": "Ombre",
