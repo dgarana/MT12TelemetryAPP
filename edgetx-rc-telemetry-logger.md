@@ -1,64 +1,56 @@
 # EdgeTX RC Input Logger for RadioMaster MT12
 
-## 1. Recommended architecture
+## 1. Architecture
 
-### Architecture goal
+### Overview
 
-Split the system into two layers:
+The logger is split into two layers:
 
-1. **Logging core**
-   - Channel and switch reading.
-   - Sample-rate control.
-   - RAM buffer.
-   - Batched SD writes.
-   - Recording state management.
-   - Stable CSV format for post-production.
+1. **Logging core** (`RCLOG/RCLOGC.lua`)
+   - Auto-discovers all available sources at startup.
+   - Controls sample rate via `getTime()`.
+   - Buffers samples in RAM and flushes to the SD card in batches.
+   - Manages recording state and file lifecycle.
+   - Writes a stable CSV format for the desktop app.
 
 2. **EdgeTX wrappers**
-   - `Telemetry Script`: recommended mode for live use on the bench or track.
-   - `Tool Script`: useful for manual tests or one-off sessions.
+   - `TELEMETRY/RCLOG.lua` — recommended for real sessions; runs in the background via `background()` while the model is active.
+   - `TOOLS/RCLOG.lua` — useful for manual tests launched from `SYSTEM > TOOLS` without touching model configuration.
 
-### Why this architecture
+Both wrappers call the same core. The core is configured via an `options` table passed to `newLoggerApp()`.
 
-- The core is decoupled from the script type and can be reused as-is.
-- The `Telemetry` version can record in the background via `background()`.
-- The `Tool` version lets you launch the logger from `SYSTEM > TOOLS` without touching the model configuration.
-- The CSV format stays stable for the desktop app, Python, DaVinci Resolve, and any future replay tooling.
+### Source discovery
 
-### Important technical decision
+At `init()` the script auto-discovers all available sources by calling `getFieldInfo(name)` for each candidate and storing the returned `id`. Sources that don't exist on the radio are silently skipped.
 
-For channels the script prioritises `getOutputValue(outputIndex)` over `getValue("ch1")`.
+Discovery order and candidates:
 
-Reason:
+| Group | Names tried |
+|-------|-------------|
+| Raw inputs (pre-mixer) | `input1` … `input16` |
+| Output channels (post-mixer) | `ch1` … `ch16` |
+| Switches | `sa` `sb` `sc` `sd` `se` `sf` `sg` `sh` |
+| System | `tx-voltage` `timer1` `timer2` `rssi` |
+| Telemetry sensors | `RxBt` `Curr` `Cels` `Tmp1` `Tmp2` `RPM` |
 
-- `getOutputValue(0)` reads the **final output of CH1** directly by zero-based index.
-- It avoids a source-name lookup on every call.
-- It is more explicit when the goal is to log the post-mixer channel output.
+At runtime, values are read with `getValue(fieldId)` — a single call per source per tick using the pre-resolved field ID. `getFieldInfo()` is never called inside the sample loop.
 
-`getFieldInfo("ch1")` is used once at startup for validation and as a fallback compatibility check.
+### Internal flow
 
-### Internal logger flow
+```
+init()
+  → detect EdgeTX version
+  → auto-discover sources (getFieldInfo per candidate)
+  → refreshValues() once
 
-1. `init()`
-   - Detects EdgeTX version.
-   - Resolves configured channels.
-   - Resolves optional switches.
-   - Initialises buffer and state.
+background() / run()  [called every EdgeTX tick]
+  → refreshValues()   [getValue(fieldId) for each source]
+  → sample(nowTick)   [write csvRow to buffer if interval elapsed]
+  → shouldFlush()     [flush buffer to SD if threshold reached]
 
-2. `background()`
-   - Refreshes current values.
-   - Samples according to `getTime()`.
-   - Flushes in batches when due.
-
-3. `run()`
-   - Handles menu and key events.
-   - Calls the same internal service loop.
-   - Draws state on the LCD.
-
-4. `destroy()`
-   - Forces a final flush.
-   - Closes any open handles.
-   - Leaves state consistent.
+destroy()
+  → flushBuffer()     [final write, close file]
+```
 
 ---
 
@@ -71,204 +63,144 @@ SDCARD/
 │   └── 20260512_220812_TEKNO.csv
 └── SCRIPTS/
     ├── RCLOG/
-    │   └── RCLOGC.lua
+    │   └── RCLOGC.lua        ← shared core
     ├── TELEMETRY/
-    │   └── RCLOG.lua
+    │   └── RCLOG.lua         ← telemetry wrapper
     └── TOOLS/
-        └── RCLOG.lua
+        └── RCLOG.lua         ← tool wrapper
 ```
 
 Notes:
 
-- `RCLOG.lua` respects the short filename limit for scripts on monochrome EdgeTX radios.
-- `RCLOGC.lua` is the shared core.
 - `LOGS/` already exists on a normal EdgeTX SD card; the script does not create directories.
-- Log filenames follow the pattern `YYYYMMDD_HHMMSS_MODELNAME.csv`. If no RTC is available a tick-based fallback name is used: `t<tick>_MODELNAME.csv`.
+- Log filenames follow the pattern `YYYYMMDD_HHMMSS_MODELNAME.csv`. If no RTC is available, a tick-based fallback is used: `t<tick>_MODELNAME.csv`.
+- `RCLOGC.lua` is the shared core — never called directly by EdgeTX.
 
 ---
 
 ## 3. Generated CSV
 
-All channel values in the CSV are **normalised** by `applyChannelCalibration` before being written, regardless of whether the guided calibration wizard has been run:
+Values are written **raw** — exactly as returned by `getValue(fieldId)`. No normalization or calibration is applied.
 
-- **Without guided calibration**: a simple linear normalisation — `roundNearest((value × 100) / 1024)` — is applied to every channel. This keeps values in approximately `−100..100`.
-- **With guided calibration** (CH1 and CH2 only): the actual measured travel is used, so `−100` and `100` match the real endpoints of the stick/wheel/trigger on that specific radio and model.
+Typical raw value ranges:
 
-Example output:
+| Source type | Range |
+|-------------|-------|
+| Analog (inputs, channels) | `−1024 … 1024` |
+| Switch | `−1024`, `0`, or `1024` (3-pos) / `−1024` or `1024` (2-pos) |
+| Telemetry (RxBt, Curr, etc.) | Sensor-dependent units |
+
+Example output with the default 4-channel layout:
 
 ```csv
-timestamp,ch1,ch2,ch3,ch4
-100,-95,0,50,0
-100,-93,3,50,0
-100,-90,6,50,0
+timestamp,input1,input2,ch1,ch2,ch3,ch4,sa,sb,tx-voltage
+100,-512,0,-530,10,512,0,-1024,1024,124
+104,-490,12,-510,14,512,0,-1024,1024,124
+108,-470,24,-492,18,512,0,-1024,1024,124
 ```
 
 ### Conventions
 
-- `timestamp` uses `getTime()` units — **10 ms ticks**.
-- All channel values are normalised to approximately `−100..100`.
-- `0` represents the real centre. `−100` is full left/reverse, `100` is full right/forward.
-- After guided calibration, CH1 and CH2 reflect the actual travel of that specific radio/model, correcting asymmetric trims, subtrims, or EPA.
-- CH3/CH4 use the simple fixed normalisation (`÷ 1024 × 100`) and are not affected by the calibration wizard.
+- `timestamp` — `getTime()` ticks, **10 ms each**. The desktop app converts to `time_ms` by subtracting the first tick.
+- Column names are exactly the source names discovered at `init()` — whatever `getFieldInfo()` returned for that radio.
+- Only sources that existed on the radio at startup appear as columns.
+- Values of `0` are written if `getValue()` returns `nil` for a source.
 
-### Guided calibration at recording start
+### Sample rate
 
-Current on-screen flow:
+Fixed at **25 Hz** (`sampleIntervalTicks = 4` ticks of 10 ms). EdgeTX does not guarantee exact callback timing, so sample timing is based on `getTime()` — never on counting callbacks.
 
-1. Opening the script shows a two-item menu.
-2. You can choose `Start Recording` or `Calibrate`.
-3. `Calibrate` launches the guided assistant.
-4. Each step is confirmed manually by pressing **ENTER**.
-5. `Start Recording` begins writing the CSV using the last available calibration.
+### Flush policy
 
-Wizard steps:
+Samples are accumulated in a RAM buffer and written to the SD card in batches:
 
-1. `STEP 1/5`: release the wheel and trigger to centre.
-2. `STEP 2/5`: full left turn.
-3. `STEP 3/5`: full right turn.
-4. `STEP 4/5`: full throttle.
-5. `STEP 5/5`: full reverse.
-6. The script records the raw CH1 and CH2 values at each confirmed position and computes the real centre and travel range.
+- After **25 samples** (1 second at 25 Hz), or
+- After **100 ticks** (1 second) have elapsed since the last flush — whichever comes first.
 
-At each step you move the radio to the requested position and press **ENTER**. The script captures the current raw value of CH1 and CH2 at that instant as the reference for that step. No samples are written to the CSV during calibration.
-
-This is better than a simple "neutral" calibration because it:
-
-- determines the real steering centre from the left/right extremes,
-- determines the real throttle centre from the gas/reverse extremes,
-- learns the actual travel used on this specific radio and model,
-- and reduces problems from trim, subtrim, or asymmetric endpoints.
+The file is opened in append mode, written, and closed immediately after each flush. This minimises the open-file window and limits data loss to at most 1 second of samples if power is cut.
 
 ---
 
-## 4. Possible future improvements
+## 4. User interface (LCD)
 
-### Professional overlay for crawler / trail driving
+The LCD layout on the MT12 monochrome display:
 
-- Steering wheel overlay derived from CH1.
-- Throttle/brake bar derived from CH2.
-- Named switch indicators.
-- Winch state from a dedicated channel or switch.
-- Light state from a switch or proportional channel.
-- Diff lock, 2WD/4WD, DIG indicators, etc.
+```
+RCLOG TEL                    25Hz
+────────────────────────────────
+ST  [████████░░░░░░░░░░░░░]  +42%
+THR [░░░░░░░░░░█████░░░░░░]  +28%
+────────────────────────────────
+REC  00:12.4              3108
+/LOGS/20260517_180258_TT02.csv
+                          ENTER
+```
 
-### Replay and analytics
+- **ST bar** — live display of `input2` (steering), normalized for display only.
+- **THR bar** — live display of `input1` (throttle), normalized for display only.
+- **ENTER** — toggles recording on/off.
+- While recording: shows elapsed time and total sample count.
+- While stopped: shows number of discovered sources and `ENTER` hint.
+- Errors and warnings appear in the footer line.
 
-- CSV session player in Python.
-- Synchronisation with video via manual offset and a start clap/beep.
-- Export to an intermediate JSON format for complex compositors.
-- Input analysis: full-throttle time, braking events, steering jitter, etc.
-
-### DaVinci Resolve integration
-
-- CSV → normalised JSON for Fusion.
-- CSV → PNG sequence with alpha channel.
-- CSV → Fusion macro generator.
-- Templates for wheel, trigger, bars, and crawler iconography.
-
----
-
-## 5. Performance recommendations
-
-### What to do
-
-- Keep sampling at `10 Hz` or `20 Hz`.
-- Write to the SD card in blocks only, not on every sample.
-- Open the file only during a flush.
-- Close immediately after each flush.
-- Use `getOutputValue()` for final channel outputs.
-- Call `getFieldInfo()` only once at startup, never inside the sample loop.
-
-### What to avoid
-
-- Calling `getValue("ch1")` by name on every frame.
-- Keeping a file handle open throughout the entire session.
-- Drawing large amounts of text or complex layouts on every iteration.
-- Large `string.format()` calls or unnecessary concatenations on every tick.
-- Attempting high sample rates like `50 Hz` in Lua on monochrome radios for this use case.
-
-### Actual execution frequency
-
-EdgeTX does not guarantee that `run()` and `background()` fire with exactly the same period every time.
-
-Consequences:
-
-- The script **must not assume** an exact 10 Hz or 20 Hz callback.
-- Sample timing must be based on `getTime()`, not on counting callbacks.
-- If the scheduler delays an iteration, the next sample must use the real clock — never synthesise intermediate values.
-
-### SD I/O and corruption
-
-The main real risk on RC radios is not "corruption from appending" but rather:
-
-- power cut during a write,
-- too many small writes,
-- unflushed buffers at exit,
-- file handles left open too long.
-
-The design addresses this by:
-
-- buffering several samples in RAM,
-- flushing every 10 samples or at least once per second,
-- writing in append mode,
-- closing the file immediately after each flush,
-- and doing a final flush on `STOP`.
-
-If the user forces the script to close or cuts power, everything already written to the SD is intact; at most the samples still in RAM are lost.
+Note: the display normalization (`normalizeRaw`) divides by 1024 and clamps to `−100..100`. This is **only for the bars on screen** — it does not affect the CSV values.
 
 ---
 
-## 6. Video synchronisation system
+## 5. Recording control
 
-### Practical recommendation
+ENTER toggles between stopped and recording:
 
-Use three levels of synchronisation:
+- **Stopped → Recording**: opens (or creates) the session file, writes the CSV header if the file is new, starts sampling.
+- **Recording → Stopped**: flushes the buffer and closes the session.
+- In Tool mode, EXIT or RTN calls `destroy()` and exits the script.
 
-1. **Primary sync via EdgeTX timestamp**
-   - `timestamp` field in 10 ms ticks.
+There is no menu, no calibration wizard, and no pre-recording setup. The script starts immediately on ENTER.
 
-2. **Visible/audible sync mark when REC starts**
-   - A beep, haptic, or visible switch change on the video.
-   - That point is aligned in post-production.
+---
 
-3. **Manual offset in the overlay generator**
-   - `offset_ms` parameter in MT12OverlayStudio.
-   - Corrects camera latency, capture card delay, or recording start offset.
+## 6. Performance notes
 
-### Recommended pipeline
+### What the design does
+
+- Resolves all `getFieldInfo()` calls once at `init()` — never inside the sample loop.
+- Uses `getValue(fieldId)` (by numeric ID) rather than `getValue("ch1")` (by name) — avoids string lookups on every tick.
+- Buffers samples in a Lua table; writes to SD only on flush, not on every sample.
+- Opens and closes the file on each flush — no persistent file handle.
+
+### What to avoid when extending
+
+- Calling `getFieldInfo()` inside `background()` or `run()`.
+- Keeping a file handle open between flushes.
+- Complex `string.format()` calls or large concatenations inside `sample()`.
+- Targeting sample rates above 25 Hz in Lua on monochrome radios — the scheduler cannot reliably sustain them.
+
+---
+
+## 7. Video synchronisation
+
+### Practical approach
+
+1. **Primary**: use the `timestamp` field (10 ms ticks) as the session clock.
+2. **Sync mark**: create a visible or audible event when recording starts (switch flip, beep) — align this point in the video editor.
+3. **Fine offset**: use `offset_ms` in MT12OverlayStudio to correct camera latency or capture-card delay.
+
+### Recommended workflow
 
 1. Record the session video.
-2. Start the logger and create a visible or audible sync mark.
-3. Export the CSV from the SD card.
-4. Process the CSV in the desktop app (MT12OverlayStudio).
-5. Generate the overlay or intermediate data for DaVinci Resolve.
-6. Adjust `offset_ms` once per session.
-
-### Preparation for a professional pipeline
-
-Recommended future CSV fields:
-
-- `session_id`
-- `model_name`
-- `radio_name`
-- `rate_hz`
-- `timestamp`
-- `ch1..chN`
-- `switch_*`
-- `telemetry_*`
-- `event_marker`
+2. Press ENTER on the radio to start logging; create a sync mark.
+3. Transfer the CSV from the SD card.
+4. Load the CSV in MT12OverlayStudio.
+5. Adjust `offset_ms` once per session until the overlay aligns.
 
 ---
 
-## Official verified sources
+## 8. Official sources
 
 - [EdgeTX Lua Reference Guide](https://luadoc.edgetx.org/)
-- [General Functions 2.9](https://luadoc.edgetx.org/2.9/part_iii_-_opentx_lua_api_reference/general-functions-less-than-greater-than-luadoc-begin-general)
-- [getOutputValue(outputIndex)](https://luadoc.edgetx.org/2.10/part_iii_-_opentx_lua_api_reference/general-functions-less-than-greater-than-luadoc-begin-general/getoutputvalue-outputindex)
+- [getFieldInfo / getValue](https://luadoc.edgetx.org/2.9/part_iii_-_opentx_lua_api_reference/general-functions-less-than-greater-than-luadoc-begin-general)
 - [getTime()](https://luadoc.edgetx.org/lua-api-reference/time/gettime)
-- [Data Exchange with the EdgeTX Model Setup](https://luadoc.edgetx.org/2.11/lua-api-programming/data-exchange-with-the-edgetx-model-setup)
 - [Telemetry Scripts](https://luadoc.edgetx.org/overview/script-types/telemetry-scripts)
-- [One-Time Scripts / Tool Scripts](https://luadoc.edgetx.org/2.9/part_i_-_script_type_overview/one-time_scripts)
-- [Function Scripts](https://luadoc.edgetx.org/overview/script-types/function-scripts)
+- [One-Time / Tool Scripts](https://luadoc.edgetx.org/2.9/part_i_-_script_type_overview/one-time_scripts)
 - [EdgeTX manual for monochrome radios](https://manual.edgetx.org/bw-radios)
 - [RadioMaster MT12 product page](https://radiomasterrc.com/products/mt12-surface-radio-controller)

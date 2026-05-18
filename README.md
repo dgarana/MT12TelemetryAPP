@@ -20,12 +20,12 @@ Load a telemetry CSV from your radio, either manually or by plugging the MT12 in
 ### 2 · Layout
 Visual overlay editor. Drag widgets onto a live preview of your frame, resize them, and style every color.
 
-- **Widget types** — `wheel` (steering), `vertical_bar` (throttle/brake), `bar` (horizontal channel), `circle` (gauge), `text` (value label or timer)
+- **Widget types** — `gauge` (rotating spoke), `vertical_bar` (throttle/brake), `bar` (horizontal channel), `text` (value label or timer)
 - **Sources** — `time` (session clock) plus any channel present in the CSV (`ch1`, `ch2`, … `chN`)
 - **Preview timeline** — scrub through the session to see live animated widget values
 - **Zoom & pan** — mouse wheel to zoom, drag the background to pan; zoom controls in the timeline bar
 - **Inspector** — name, label, position (X/Y as frame fractions), pixel size, shadow toggle, and per-widget color controls for each visual element
-- **Calibration-aware** — values are normalized using per-channel offsets recorded during the guided calibration on the radio
+- **Per-widget transforms** — `min`, `max`, `avg` (running session stats) and `%` (map to a custom range) can be chained per widget
 
 ### 3 · Export
 Render the overlay to a sequence of PNG frames and optionally encode a transparent ProRes 4444 MOV using ffmpeg.
@@ -211,11 +211,11 @@ The renderer keeps its own in-memory copy of CSV samples (`previewSamples`) and 
 
 ### Settings persistence
 
-Settings (layout, colors, paths, calibration, ffmpeg path) are saved to `overlay_ui_settings.json` in the Electron `userData` directory:
+Settings (layout, colors, paths, ffmpeg path) are saved to `overlay_ui_settings.json` in the app data directory:
 
 | Platform | Path |
 |----------|------|
-| Windows  | `%APPDATA%\MT12OverlayStudio\` |
+| Windows  | `%LOCALAPPDATA%\MT12OverlayStudio\` |
 | macOS    | `~/Library/Application Support/MT12OverlayStudio/` |
 | Linux    | `~/.config/MT12OverlayStudio/` |
 
