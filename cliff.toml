@@ -40,4 +40,4 @@ sort_commits = "oldest"
 
 [remote.github]
 owner = "dgarana"
-repo = "MT12TelemetryAPP"
+repo = "MT12OverlayStudio"

@@ -1,4 +1,4 @@
-# MT12 Telemetry
+# MT12OverlayStudio
 
 Desktop app for creating professional RC telemetry video overlays from RadioMaster MT12 sessions. Records channel data via Lua scripts on the radio, then generates frame-accurate transparent video overlays you can composite in any editor.
 
@@ -55,7 +55,7 @@ The **Telemetry** variant is recommended for real sessions — it runs via `back
 
 ### Automatic installation
 
-Connect the MT12 via USB, open the **Source** tab in MT12 Telemetry, select the radio unit, choose the script language, and click **Install Scripts to SD**. The app copies the three files to the correct locations automatically.
+Connect the MT12 via USB, open the **Source** tab in MT12OverlayStudio, select the radio unit, choose the script language, and click **Install Scripts to SD**. The app copies the three files to the correct locations automatically.
 
 ### Manual installation
 
@@ -191,7 +191,7 @@ npm run dist:mac      # macOS DMG (arm64 + x64)
 npm run dist:linux    # Linux AppImage + deb
 ```
 
-Output goes to `release/`. Auto-updates are published via GitHub Releases (`dgarana/MT12TelemetryAPP`). The bundled Lua scripts are included as extra resources so **Install Scripts to SD** works without internet access.
+Output goes to `release/`. Auto-updates are published via GitHub Releases (`dgarana/MT12OverlayStudio`). The bundled Lua scripts are included as extra resources so **Install Scripts to SD** works without internet access.
 
 ---
 
@@ -215,9 +215,9 @@ Settings (layout, colors, paths, calibration, ffmpeg path) are saved to `overlay
 
 | Platform | Path |
 |----------|------|
-| Windows  | `%APPDATA%\MT12TelemetryAPP\` |
-| macOS    | `~/Library/Application Support/MT12TelemetryAPP/` |
-| Linux    | `~/.config/MT12TelemetryAPP/` |
+| Windows  | `%APPDATA%\MT12OverlayStudio\` |
+| macOS    | `~/Library/Application Support/MT12OverlayStudio/` |
+| Linux    | `~/.config/MT12OverlayStudio/` |
 
 ---
 

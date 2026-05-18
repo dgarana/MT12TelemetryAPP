@@ -21,7 +21,7 @@ type LoadedCsv = {
 
 type EmitFn = (event: { type: string; [key: string]: unknown }) => void;
 
-const APP_NAME = "MT12TelemetryAPP";
+const APP_NAME = "MT12OverlayStudio";
 const SETTINGS_FILENAME = "overlay_ui_settings.json";
 const DEFAULT_SOURCES = ["time", "ch1", "ch2", "ch3", "ch4"];
 const TIME_SOURCE = "time";
@@ -758,7 +758,12 @@ async function renderOverlay(payload: Record<string, unknown>, emit: EmitFn) {
         renderFrameToCanvas(canvas, layout, state, runningStats, timeMs, width, height);
         const raw = getRawFrame(canvas);
         if (!stdin.write(raw)) {
-          await new Promise<void>((res, rej) => { stdin.once("drain", res); stdin.once("error", rej); });
+          await new Promise<void>((res, rej) => {
+            const onDrain = () => { stdin.off("error", onError); res(); };
+            const onError = (e: Error) => { stdin.off("drain", onDrain); rej(e); };
+            stdin.once("drain", onDrain);
+            stdin.once("error", onError);
+          });
         }
         const now = Date.now();
         if (now - lastProgressAt >= 100 || i === frameCount - 1) {
