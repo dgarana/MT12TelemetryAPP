@@ -144,6 +144,21 @@ function App() {
     return window.updaterApi.onStatus(setUpdateStatus);
   }, []);
 
+  useEffect(() => {
+    (window as unknown as Record<string, unknown>).__screenshotLoadCsv = loadCsv;
+  }, [loadCsv]);
+
+  useEffect(() => {
+    const w = window as unknown as Record<string, unknown>;
+    w.__screenshotSelectWidget = setSelectedItemId;
+    w.__screenshotUpdateLayout = (id: string, updates: Partial<LayoutItem>) => {
+      setSettings((current) => ({
+        ...current,
+        layout: { ...current.layout, [id]: { ...current.layout[id], ...updates } },
+      }));
+    };
+  }, []);
+
   function pushLog(message: string) {
     setLogs((current) => [message, ...current].slice(0, 200));
   }

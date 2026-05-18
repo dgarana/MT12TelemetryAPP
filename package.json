@@ -6,10 +6,10 @@
   "author": "dgara",
   "license": "MIT",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
     "electron": "tsc -p tsconfig.node.json && electron .",
     "start": "npm-run-all build electron:file",
-    "start:dev": "npm-run-all -p dev wait-and-electron",
+    "start:dev": "npm-run-all -p vite:serve wait-and-electron",
+    "vite:serve": "vite --host 127.0.0.1",
     "electron:file": "cross-env MT12_ELECTRON_FILE=1 electron .",
     "wait-and-electron": "wait-on tcp:5173 && npm run electron",
     "build": "tsc -p tsconfig.node.json && vite build",
@@ -19,6 +19,9 @@
     "dist:linux": "npm run build && electron-builder --linux",
     "smoke": "npm-run-all build smoke:electron",
     "smoke:electron": "cross-env MT12_ELECTRON_FILE=1 MT12_ELECTRON_SMOKE=1 electron .",
+    "screenshots": "npm-run-all build screenshots:electron",
+    "screenshots:electron": "cross-env MT12_ELECTRON_FILE=1 MT12_SCREENSHOT=1 MT12_SCREENSHOT_CSV=docs/example_session.csv electron .",
+    "gen:example-csv": "node scripts/gen_example_csv.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json --noEmit"
   },
   "dependencies": {

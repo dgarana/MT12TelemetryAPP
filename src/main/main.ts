@@ -3,6 +3,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { handleNativeCommand } from "./nativeApi";
 import { initUpdater, checkForUpdates, downloadUpdate, quitAndInstall, getLastUpdaterStatus } from "./updater";
+import { runScreenshots } from "./screenshots";
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -40,6 +41,15 @@ function createWindow() {
     win.loadFile(path.join(__dirname, "../renderer/index.html"));
   } else {
     win.loadURL(process.env.VITE_DEV_SERVER_URL || "http://127.0.0.1:5173");
+  }
+
+  if (process.env.MT12_SCREENSHOT === "1") {
+    win.webContents.once("did-finish-load", () => {
+      runScreenshots(win).catch((err) => {
+        console.error("Screenshot error:", err);
+        app.exit(1);
+      });
+    });
   }
 
   if (process.env.MT12_ELECTRON_SMOKE === "1") {
