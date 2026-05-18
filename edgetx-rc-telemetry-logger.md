@@ -232,7 +232,7 @@ Use three levels of synchronisation:
    - That point is aligned in post-production.
 
 3. **Manual offset in the overlay generator**
-   - `offset_ms` parameter in MT12 Telemetry.
+   - `offset_ms` parameter in MT12OverlayStudio.
    - Corrects camera latency, capture card delay, or recording start offset.
 
 ### Recommended pipeline
@@ -240,7 +240,7 @@ Use three levels of synchronisation:
 1. Record the session video.
 2. Start the logger and create a visible or audible sync mark.
 3. Export the CSV from the SD card.
-4. Process the CSV in the desktop app (MT12 Telemetry).
+4. Process the CSV in the desktop app (MT12OverlayStudio).
 5. Generate the overlay or intermediate data for DaVinci Resolve.
 6. Adjust `offset_ms` once per session.
 

@@ -1,9 +1,26 @@
 {
-  "appTitle": "MT12 Telemetry",
+  "appTitle": "MT12OverlayStudio",
   "nav": {
-    "source": "Source",
-    "layout": "Mise en page",
-    "export": "Exporter"
+    "source": "Charger",
+    "layout": "Concevoir",
+    "export": "Exporter",
+    "install": "Installer"
+  },
+  "install": {
+    "autoTab": "Unité MT12 (Auto)",
+    "manualTab": "Dossier manuel",
+    "autoDesc": "Détecte la radio automatiquement et installe les scripts directement sur la carte SD.",
+    "manualDesc": "Enregistre les scripts dans un dossier et copiez-les manuellement sur la carte SD.",
+    "scanForRadio": "Rechercher la radio",
+    "scanning": "Recherche…",
+    "noRadioFound": "Aucune radio détectée",
+    "radioUnit": "Radio",
+    "scriptLang": "Langue du script",
+    "installToRadio": "Installer sur la radio",
+    "chooseDir": "Choisir un dossier…",
+    "noDirSelected": "Aucun dossier sélectionné",
+    "saveScripts": "Enregistrer les scripts",
+    "installedTitle": "Fichiers installés :"
   },
   "topbar": {
     "save": "Enregistrer",
@@ -25,7 +42,9 @@
     "installScriptsTitle": "Installer les scripts Lua sur {{root}}",
     "scriptLangTitle": "Langue du script sur la radio",
     "editLayout": "Modifier la mise en page",
-    "csvPathPlaceholder": "/chemin/vers/log.csv"
+    "csvPathPlaceholder": "/chemin/vers/log.csv",
+    "manualDesc": "Sélectionnez un fichier CSV de log depuis votre ordinateur.",
+    "radioDesc": "Détecte votre MT12 via USB et choisissez un log directement depuis la radio."
   },
   "layout": {
     "noSource": "Aucune source chargée",
@@ -42,12 +61,26 @@
     "widgetType": "Type de widget",
     "widthPx": "Largeur px",
     "heightPx": "Hauteur px",
+    "sectionTransform": "Transformation",
+    "subgroupPosition": "Position",
+    "subgroupSize": "Taille",
+    "sectionDataPipeline": "Pipeline de données",
+    "appearance": "Apparence",
     "shadow": "Ombre",
     "selectOrAdd": "Sélectionner ou ajouter un widget",
     "zoomOut": "Dézoomer",
     "resetZoom": "Réinitialiser le zoom",
     "zoomIn": "Zoomer",
-    "swapDimensions": "Inverser largeur ↔ hauteur"
+    "swapDimensions": "Inverser largeur ↔ hauteur",
+    "dataTransform": "Transform",
+    "transform_min": "Min (cumulé)",
+    "transform_max": "Max (cumulé)",
+    "transform_avg": "Moy (cumulée)",
+    "transform_%": "%",
+    "addTransform": "Ajouter transform",
+    "rangeMin": "Min",
+    "rangeCenter": "Centre",
+    "rangeMax": "Max"
   },
   "colors": {
     "value": "Valeur",
@@ -56,8 +89,8 @@
     "boxOutline": "Contour boîte",
     "spokeHub": "Rayon / moyeu",
     "valueText": "Texte valeur",
-    "wheelFill": "Remplissage roue",
-    "wheelOutline": "Contour roue",
+    "gaugeFill": "Remplissage gauge",
+    "gaugeOutline": "Contour gauge",
     "negativeFill": "Remplissage négatif",
     "positiveFill": "Remplissage positif",
     "centerMark": "Repère central",
@@ -94,7 +127,7 @@
     "rendered": "{{count}} frame(s) rendu(s)",
     "settingsSaved": "Paramètres enregistrés",
     "settingsSavedPath": "Paramètres enregistrés : {{path}}",
-    "loadedSamples": "{{count}} échantillons chargés ({{mode}})",
+    "loadedSamples": "{{count}} échantillons chargés",
     "foundRadios": "{{count}} source(s) radio trouvée(s)",
     "noEdgeTx": "Aucune SD EdgeTX trouvée",
     "scriptsInstalled": "Scripts installés ({{count}} fichiers) :"

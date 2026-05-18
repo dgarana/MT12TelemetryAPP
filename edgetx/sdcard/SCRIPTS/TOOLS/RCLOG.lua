@@ -30,7 +30,6 @@ end
 local app = newLoggerApp({
   mode = "tool",
   scriptLabel = "RCLOG TOOL",
-  lang = "{{LANG}}",
 })
 
 return {

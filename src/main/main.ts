@@ -23,7 +23,7 @@ function createWindow() {
     minWidth: 1120,
     minHeight: 720,
     backgroundColor: "#101418",
-    title: "MT12 Telemetry",
+    title: "MT12OverlayStudio",
     webPreferences: {
       preload: path.join(__dirname, "../preload/preload.js"),
       contextIsolation: true,

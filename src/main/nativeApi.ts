@@ -1,7 +1,8 @@
 import { copyFileSync, createWriteStream, chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { execSync, spawn } from "node:child_process";
 import { app } from "electron";
-import { makeCanvas, renderFrameToCanvas } from "./frameRenderer";
+import { makeCanvas, renderFrameToCanvas, getRawFrame } from "./frameRenderer";
+import { buildRunningStatsArray, getRunningStatsAt } from "../shared/widgetDraw";
 import https from "node:https";
 import os from "node:os";
 import path from "node:path";
@@ -20,11 +21,11 @@ type LoadedCsv = {
 
 type EmitFn = (event: { type: string; [key: string]: unknown }) => void;
 
-const APP_NAME = "MT12TelemetryAPP";
+const APP_NAME = "MT12OverlayStudio";
 const SETTINGS_FILENAME = "overlay_ui_settings.json";
 const DEFAULT_SOURCES = ["time", "ch1", "ch2", "ch3", "ch4"];
 const TIME_SOURCE = "time";
-const CHANNEL_WIDGET_TYPES = ["wheel", "vertical_bar", "bar", "circle", "text"];
+const CHANNEL_WIDGET_TYPES = ["gauge", "vertical_bar", "bar", "text"];
 const TIME_WIDGET_TYPES = ["text"];
 
 function clamp(value: number, low: number, high: number) {
@@ -32,21 +33,6 @@ function clamp(value: number, low: number, high: number) {
   return Math.max(low, Math.min(high, value));
 }
 
-function defaultCalibration() {
-  return {};
-}
-
-function sanitizeCalibration(calibration: unknown) {
-  const safe: Record<string, number> = defaultCalibration();
-  if (!calibration || typeof calibration !== "object") return safe;
-  const raw = calibration as Record<string, unknown>;
-  for (const key of Object.keys(raw)) {
-    if (!key.endsWith("_offset")) continue;
-    const value = Number(raw[key]);
-    safe[key] = Number.isFinite(value) ? value : 0;
-  }
-  return safe;
-}
 
 function widgetTypesForSource(source: string) {
   return source === TIME_SOURCE ? TIME_WIDGET_TYPES : CHANNEL_WIDGET_TYPES;
@@ -91,7 +77,7 @@ function defaultItemForSource(source: string, itemId: string) {
       source: "ch1",
       name: "ch1 1",
       label: "CH1",
-      widget: "wheel",
+      widget: "gauge",
       x: 0.15,
       y: 0.78,
       scale_x: 1,
@@ -196,7 +182,7 @@ function defaultItemForSource(source: string, itemId: string) {
     base.negative_color = "#ff5c5c";
     base.positive_color = "#40d68c";
   } else if (source === "ch1") {
-    base.widget = "wheel";
+    base.widget = "gauge";
     base.accent_color = "#ffd25a";
   } else if (source === TIME_SOURCE) {
     base.widget = "text";
@@ -251,6 +237,10 @@ function sanitizeLayout(layout: unknown) {
       outline_visible: userItem.outline_visible !== undefined ? userItem.outline_visible !== false : itemDefaults.outline_visible !== false,
       text_visible: userItem.text_visible !== undefined ? userItem.text_visible !== false : itemDefaults.text_visible !== false,
       shadow_visible: userItem.shadow_visible !== undefined ? userItem.shadow_visible !== false : itemDefaults.shadow_visible !== false,
+      ...(Array.isArray(userItem.transforms) ? { transforms: userItem.transforms as string[] } : {}),
+      ...(userItem.range_min !== undefined ? { range_min: Number(userItem.range_min) } : {}),
+      ...(userItem.range_center !== undefined ? { range_center: Number(userItem.range_center) } : {}),
+      ...(userItem.range_max !== undefined ? { range_max: Number(userItem.range_max) } : {}),
     };
   }
   return Object.keys(merged).length ? merged : {};
@@ -297,7 +287,6 @@ function loadSettings() {
     }
   }
   settings.layout = sanitizeLayout(settings.layout);
-  settings.calibration = sanitizeCalibration(settings.calibration);
   settings.output_dir ??= path.join(os.tmpdir(), APP_NAME, "overlay_frames");
   settings.video_output ??= path.join("output", "overlay.mov");
   settings.fps ??= 30;
@@ -315,7 +304,6 @@ function saveSettings(payload: Record<string, unknown>) {
   const settings = { ...((payload.settings as Record<string, unknown>) || payload) };
   delete settings.settings_path;
   settings.layout = sanitizeLayout(settings.layout);
-  settings.calibration = sanitizeCalibration(settings.calibration);
   writeFileSync(settingsPath(), JSON.stringify(settings, null, 2), "utf8");
   return loadSettings();
 }
@@ -360,6 +348,7 @@ function loadSamples(csvPath: string, offsetMs = 0): LoadedCsv {
   if (!sources.length) throw new Error("CSV contains no telemetry columns.");
   const index = Object.fromEntries(headers.map((header, idx) => [header, idx]));
   let firstTick: number | null = null;
+
   const samples: Sample[] = [];
   for (const line of lines.slice(1)) {
     const row = parseCsvLine(line);
@@ -369,7 +358,7 @@ function loadSamples(csvPath: string, offsetMs = 0): LoadedCsv {
     const values: Record<string, number> = {};
     for (const source of sources) {
       const value = Number(row[index[source]]);
-      values[source] = Number.isFinite(value) ? value : 0;
+      if (Number.isFinite(value)) values[source] = value;
     }
     samples.push({
       time_ms: (tick - firstTick) * 10 + offsetMs,
@@ -380,42 +369,10 @@ function loadSamples(csvPath: string, offsetMs = 0): LoadedCsv {
   return { samples, sources };
 }
 
-function detectChannelScale(samples: Sample[]) {
-  let maxAbs = 0;
-  for (const sample of samples) {
-    for (const value of Object.values(sample.values)) {
-      maxAbs = Math.max(maxAbs, Math.abs(value));
-    }
-  }
-  return maxAbs <= 120 ? "percent" : "legacy";
-}
-
-function normalizeChannel(value: number, scale: string) {
-  if (scale === "percent") {
-    return clamp(((value + 100) / 200) * 2 - 1, -1, 1);
-  }
-  return clamp(((value + 1024) / 2048) * 2 - 1, -1, 1);
-}
-
-function calibrationOffset(calibration: Record<string, number>, source: string) {
-  const value = Number(calibration[`${source}_offset`]);
-  return Number.isFinite(value) ? value : 0;
-}
-
-function frameStateFromSample(sample: Sample, calibration: Record<string, number>, scale: string): FrameState {
-  const state: FrameState = {};
-  for (const [source, value] of Object.entries(sample.values)) {
-    state[source] = normalizeChannel(value - calibrationOffset(calibration, source), scale);
-  }
-  return state;
-}
-
-function interpolateState(samples: Sample[], timeMs: number, calibrationRaw: unknown) {
-  const calibration = sanitizeCalibration(calibrationRaw);
-  const scale = detectChannelScale(samples);
-  if (timeMs <= samples[0].time_ms) return frameStateFromSample(samples[0], calibration, scale);
+function interpolateState(samples: Sample[], timeMs: number): FrameState {
+  if (timeMs <= samples[0].time_ms) return { ...samples[0].values };
   const last = samples[samples.length - 1];
-  if (timeMs >= last.time_ms) return frameStateFromSample(last, calibration, scale);
+  if (timeMs >= last.time_ms) return { ...last.values };
   let index = 0;
   while (index < samples.length - 2 && samples[index + 1].time_ms < timeMs) index += 1;
   const left = samples[index];
@@ -423,36 +380,12 @@ function interpolateState(samples: Sample[], timeMs: number, calibrationRaw: unk
   const segment = right.time_ms - left.time_ms;
   const t = segment <= 0 ? 0 : (timeMs - left.time_ms) / segment;
   const lerp = (a: number, b: number) => a + (b - a) * t;
-  const values: Record<string, number> = {};
+  const state: FrameState = {};
   const sources = new Set([...Object.keys(left.values), ...Object.keys(right.values)]);
   for (const source of sources) {
-    values[source] = lerp(left.values[source] ?? 0, right.values[source] ?? 0);
+    state[source] = lerp(left.values[source] ?? 0, right.values[source] ?? 0);
   }
-  return frameStateFromSample({ time_ms: timeMs, values }, calibration, scale);
-}
-
-function calibrate(payload: Record<string, unknown>) {
-  const { samples, sources } = loadSamples(String(payload.csv_path), Number(payload.offset_ms || 0));
-  const durationMs = Number(payload.duration_ms || 3000);
-  const start = samples[0].time_ms;
-  let windowSamples = samples.filter((sample) => sample.time_ms - start <= durationMs);
-  if (!windowSamples.length) windowSamples = [samples[0]];
-  const values = (source: string) => windowSamples.map((sample) => Number(sample.values[source] ?? 0));
-  const average = (items: number[]) => items.reduce((sum, item) => sum + item, 0) / items.length;
-  const span = (items: number[]) => Math.max(...items) - Math.min(...items);
-  const calibration = Object.fromEntries(sources.map((source) => [`${source}_offset`, average(values(source))]));
-  const scale = detectChannelScale(samples);
-  const maxSpan = Math.max(...sources.map((source) => span(values(source))));
-  return {
-    calibration,
-    info: {
-      used_samples: windowSamples.length,
-      window_ms: durationMs,
-      stable: maxSpan <= (scale === "percent" ? 8 : 80),
-      max_span: maxSpan,
-      scale_mode: scale,
-    },
-  };
+  return state;
 }
 
 function loadCsvSummary(payload: Record<string, unknown>) {
@@ -462,10 +395,7 @@ function loadCsvSummary(payload: Record<string, unknown>) {
     csv_path: csvPath,
     sample_count: samples.length,
     duration_ms: Math.max(0, samples[samples.length - 1].time_ms),
-    scale_mode: detectChannelScale(samples),
     samples,
-    first_sample: samples[0],
-    last_sample: samples[samples.length - 1],
     sources: [TIME_SOURCE, ...sources],
   };
 }
@@ -474,7 +404,7 @@ function previewState(payload: Record<string, unknown>) {
   const { samples } = loadSamples(String(payload.csv_path || ""), Number(payload.offset_ms || 0));
   return {
     time_ms: Number(payload.time_ms || 0),
-    state: interpolateState(samples, Number(payload.time_ms || 0), payload.calibration),
+    state: interpolateState(samples, Number(payload.time_ms || 0)),
   };
 }
 
@@ -542,41 +472,25 @@ function luaScriptsSrcDir(): string {
   return path.join(app.getAppPath(), "edgetx", "sdcard", "SCRIPTS");
 }
 
-const LUA_FILES: { src: string; dest: string; template: boolean }[] = [
-  { src: path.join("RCLOG", "RCLOGC.lua"),    dest: path.join("SCRIPTS", "RCLOG", "RCLOGC.lua"),    template: false },
-  { src: path.join("TELEMETRY", "RCLOG.lua"), dest: path.join("SCRIPTS", "TELEMETRY", "RCLOG.lua"), template: true  },
-  { src: path.join("TOOLS", "RCLOG.lua"),     dest: path.join("SCRIPTS", "TOOLS", "RCLOG.lua"),     template: true  },
+const LUA_FILES: { src: string; dest: string }[] = [
+  { src: path.join("RCLOG", "RCLOGC.lua"),    dest: path.join("SCRIPTS", "RCLOG", "RCLOGC.lua")    },
+  { src: path.join("TELEMETRY", "RCLOG.lua"), dest: path.join("SCRIPTS", "TELEMETRY", "RCLOG.lua") },
+  { src: path.join("TOOLS", "RCLOG.lua"),     dest: path.join("SCRIPTS", "TOOLS", "RCLOG.lua")     },
 ];
-
-const SUPPORTED_SCRIPT_LANGS = ["en", "es", "de", "fr"] as const;
-type ScriptLang = typeof SUPPORTED_SCRIPT_LANGS[number];
-
-function resolveScriptLang(raw: unknown): ScriptLang {
-  const lang = String(raw || "en").slice(0, 2).toLowerCase();
-  return (SUPPORTED_SCRIPT_LANGS as readonly string[]).includes(lang)
-    ? lang as ScriptLang
-    : "en";
-}
 
 function installScripts(payload: Record<string, unknown>) {
   const sdRoot = String(payload.root || "");
   if (!sdRoot) throw new Error("No SD card root specified.");
 
-  const lang = resolveScriptLang(payload.lang);
   const srcBase = luaScriptsSrcDir();
   const installed: string[] = [];
 
-  for (const { src, dest, template } of LUA_FILES) {
+  for (const { src, dest } of LUA_FILES) {
     const srcPath = path.join(srcBase, src);
     if (!existsSync(srcPath)) throw new Error(`Script not found in app bundle: ${src}`);
     const destPath = path.join(sdRoot, dest);
     mkdirSync(path.dirname(destPath), { recursive: true });
-    if (template) {
-      const content = readFileSync(srcPath, "utf8").replace(/\{\{LANG\}\}/g, lang);
-      writeFileSync(destPath, content, "utf8");
-    } else {
-      copyFileSync(srcPath, destPath);
-    }
+    copyFileSync(srcPath, destPath);
     installed.push(dest);
   }
 
@@ -795,6 +709,7 @@ async function renderOverlay(payload: Record<string, unknown>, emit: EmitFn) {
   const layout = (payload.layout ?? {}) as Record<string, unknown>;
 
   const { samples } = loadSamples(csvPath, offsetMs);
+  const runningStatsArray = buildRunningStatsArray(samples);
   const lastMs = samples[samples.length - 1].time_ms;
   const totalMs = durationMs > 0 ? Math.min(durationMs, lastMs) : lastMs;
   const frameCount = Math.max(1, Math.ceil((totalMs / 1000) * fps));
@@ -810,10 +725,12 @@ async function renderOverlay(payload: Record<string, unknown>, emit: EmitFn) {
 
     mkdirSync(path.dirname(videoOutput), { recursive: true });
 
-    // Pipe PNG frames directly into ffmpeg stdin — no temp files, no GPU round-trip.
+    // Pipe raw RGBA frames into ffmpeg — no PNG compression overhead.
     const proc = spawn(ffmpegPath, [
       "-y",
-      "-f", "image2pipe", "-vcodec", "png", "-r", String(fps), "-i", "pipe:0",
+      "-f", "rawvideo", "-pixel_format", "rgba",
+      "-video_size", `${width}x${height}`, "-framerate", String(fps),
+      "-i", "pipe:0",
       "-c:v", "prores_ks", "-profile:v", "4444", "-pix_fmt", "yuva444p10le",
       "-vendor", "apl0", "-an",
       videoOutput,
@@ -836,11 +753,17 @@ async function renderOverlay(payload: Record<string, unknown>, emit: EmitFn) {
       let lastProgressAt = 0;
       for (let i = 0; i < frameCount; i++) {
         const timeMs = i * msPerFrame;
-        const state = interpolateState(samples, timeMs, payload.calibration);
-        renderFrameToCanvas(canvas, layout, state, timeMs, width, height);
-        const png = await canvas.encode("png");
-        if (!stdin.write(png)) {
-          await new Promise<void>((res, rej) => { stdin.once("drain", res); stdin.once("error", rej); });
+        const state = interpolateState(samples, timeMs);
+        const runningStats = getRunningStatsAt(runningStatsArray, samples, timeMs);
+        renderFrameToCanvas(canvas, layout, state, runningStats, timeMs, width, height);
+        const raw = getRawFrame(canvas);
+        if (!stdin.write(raw)) {
+          await new Promise<void>((res, rej) => {
+            const onDrain = () => { stdin.off("error", onError); res(); };
+            const onError = (e: Error) => { stdin.off("drain", onDrain); rej(e); };
+            stdin.once("drain", onDrain);
+            stdin.once("error", onError);
+          });
         }
         const now = Date.now();
         if (now - lastProgressAt >= 100 || i === frameCount - 1) {
@@ -872,8 +795,9 @@ async function renderOverlay(payload: Record<string, unknown>, emit: EmitFn) {
   let lastProgressAt = 0;
   for (let i = 0; i < frameCount; i++) {
     const timeMs = i * msPerFrame;
-    const state = interpolateState(samples, timeMs, payload.calibration);
-    renderFrameToCanvas(canvas, layout, state, timeMs, width, height);
+    const state = interpolateState(samples, timeMs);
+    const runningStats = getRunningStatsAt(runningStatsArray, samples, timeMs);
+    renderFrameToCanvas(canvas, layout, state, runningStats, timeMs, width, height);
     const png = await canvas.encode("png");
     writeFileSync(path.join(outputDir, `frame_${String(i).padStart(6, "0")}.png`), png);
     const now = Date.now();
@@ -899,7 +823,6 @@ const commands: Record<string, (payload: Record<string, unknown>, emit: EmitFn) 
   list_radio_logs: (payload) => listRadioLogs(payload),
   load_csv_summary: (payload) => loadCsvSummary(payload),
   preview_state: (payload) => previewState(payload),
-  calibrate: (payload) => calibrate(payload),
   create_widget: (payload) => createWidget(payload),
   discover_ffmpeg: () => discoverFfmpeg(),
   download_ffmpeg: (_payload, emit) => downloadFfmpeg(emit),

@@ -15,11 +15,10 @@ const api: OverlayApi = {
   renderOverlay: (payload) => ipcRenderer.invoke("native:request", "render_overlay", payload),
   discoverRadios: () => ipcRenderer.invoke("native:request", "discover_radios", {}),
   listRadioLogs: (root) => ipcRenderer.invoke("native:request", "list_radio_logs", { root }),
-  calibrate: (payload) => ipcRenderer.invoke("native:request", "calibrate", payload),
   createWidget: (payload) => ipcRenderer.invoke("native:request", "create_widget", payload),
   discoverFfmpeg: () => ipcRenderer.invoke("native:request", "discover_ffmpeg", {}),
   downloadFfmpeg: () => ipcRenderer.invoke("native:request", "download_ffmpeg", {}),
-  installScripts: (root, lang) => ipcRenderer.invoke("native:request", "install_scripts", { root, lang }),
+  installScripts: (root) => ipcRenderer.invoke("native:request", "install_scripts", { root }),
   onBridgeEvent: (callback) => {
     const listener = (_event: unknown, payload: BridgeEvent) => callback(payload);
     ipcRenderer.on("native:event", listener);

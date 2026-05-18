@@ -1,9 +1,9 @@
-appId: dev.dgara.mt12telemetry
-productName: MT12 Telemetry
+appId: dev.dgara.mt12overlaystudio
+productName: MT12OverlayStudio
 publish:
   provider: github
   owner: dgarana
-  repo: MT12TelemetryAPP
+  repo: MT12OverlayStudio
 directories:
   buildResources: build
   output: release
