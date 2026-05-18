@@ -12,6 +12,7 @@
     <img src="https://img.shields.io/github/downloads/toperc/MT12OverlayStudio/total" alt="downloads" />
     <img src="https://img.shields.io/github/downloads/toperc/MT12OverlayStudio/latest/total" alt="downloads@latest" />
     <img src="https://img.shields.io/badge/platform-windows%20%7C%20mac%20%7C%20linux-blue" alt="platform" />
+    <a href="https://github.com/toperc/MT12OverlayStudio/releases/latest"><img src="https://img.shields.io/badge/VirusTotal-scanned-blue?logo=virustotal" alt="VirusTotal scanned" /></a>
   </p>
 </div>
 
