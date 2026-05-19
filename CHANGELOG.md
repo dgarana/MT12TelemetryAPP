@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.0.2] - 2026-05-18
+## [2.0.3] - 2026-05-19
 
 ### Documentation
 
@@ -23,6 +23,8 @@
 - Transfer the repository to TopeRC organization
 - Release v2.0.1
 - Release v2.0.2
+- Remove unused code old from previous widget canvas
+- Release v2.0.3
 
 ## [1.0.0] - 2026-05-15
 
