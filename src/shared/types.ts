@@ -84,27 +84,11 @@ export type LayoutItem = {
   bg_visible?: boolean;
   outline_color: string;
   outline_visible?: boolean;
-  text_visible?: boolean;
   shadow_visible?: boolean;
   transforms?: string[];
   range_min?: number;
   range_center?: number;
   range_max?: number;
-};
-
-export type PreviewItem = {
-  id: string;
-  name: string;
-  bounds: [number, number, number, number];
-};
-
-export type PreviewResult = {
-  preview_path: string;
-  data_url?: string;
-  width?: number;
-  height?: number;
-  items?: PreviewItem[];
-  state: Record<string, number>;
 };
 
 export type FrameState = Record<string, number>;

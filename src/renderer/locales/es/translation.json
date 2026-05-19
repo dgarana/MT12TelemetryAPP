@@ -15,7 +15,6 @@
     "scanning": "Buscando…",
     "noRadioFound": "No se detectó ninguna radio",
     "radioUnit": "Radio",
-    "scriptLang": "Idioma del script",
     "installToRadio": "Instalar en la radio",
     "chooseDir": "Elegir carpeta…",
     "noDirSelected": "Sin carpeta seleccionada",
@@ -38,9 +37,6 @@
     "noUnitFound": "Sin unidad encontrada",
     "logFile": "Archivo de log",
     "noLogSelected": "Sin log seleccionado",
-    "installScripts": "Instalar Scripts en SD",
-    "installScriptsTitle": "Instalar scripts Lua en {{root}}",
-    "scriptLangTitle": "Idioma del script en la radio",
     "editLayout": "Editar diseño",
     "csvPathPlaceholder": "/ruta/al/log.csv",
     "manualDesc": "Selecciona un archivo CSV de log desde tu ordenador.",
@@ -56,11 +52,8 @@
     "selectedWidget": "Widget seleccionado",
     "noWidgetSelected": "Sin widget seleccionado",
     "name": "Nombre",
-    "label": "Etiqueta",
     "source": "Fuente",
     "widgetType": "Tipo de widget",
-    "widthPx": "Ancho px",
-    "heightPx": "Alto px",
     "sectionTransform": "Transformación",
     "subgroupPosition": "Posición",
     "subgroupSize": "Tamaño",
@@ -72,7 +65,6 @@
     "resetZoom": "Restablecer zoom",
     "zoomIn": "Acercar",
     "swapDimensions": "Intercambiar ancho ↔ alto",
-    "dataTransform": "Transform",
     "transform_min": "Mín (acumulado)",
     "transform_max": "Máx (acumulado)",
     "transform_avg": "Media (acumulada)",
@@ -83,22 +75,16 @@
     "rangeMax": "Máx"
   },
   "colors": {
-    "value": "Valor",
-    "labelText": "Etiqueta",
     "boxFill": "Relleno caja",
     "boxOutline": "Contorno caja",
     "spokeHub": "Radio / cubo",
-    "valueText": "Texto valor",
     "gaugeFill": "Relleno gauge",
     "gaugeOutline": "Contorno gauge",
     "negativeFill": "Relleno negativo",
     "positiveFill": "Relleno positivo",
     "centerMark": "Marca central",
     "trackFill": "Relleno pista",
-    "trackOutline": "Contorno pista",
-    "needleHub": "Aguja / cubo",
-    "circleFill": "Relleno círculo",
-    "circleOutline": "Contorno círculo"
+    "trackOutline": "Contorno pista"
   },
   "export": {
     "renderSettings": "Ajustes de renderizado",
@@ -129,11 +115,7 @@
     "settingsSavedPath": "Ajustes guardados: {{path}}",
     "loadedSamples": "Cargadas {{count}} muestras",
     "foundRadios": "{{count}} fuente(s) de radio encontradas",
-    "noEdgeTx": "No se encontró SD de EdgeTX",
-    "scriptsInstalled": "Scripts instalados ({{count}} archivos):"
-  },
-  "language": {
-    "label": "Idioma"
+    "noEdgeTx": "No se encontró SD de EdgeTX"
   },
   "support": {
     "channelSub": "Canal de YouTube RC en español",

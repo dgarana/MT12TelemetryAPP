@@ -15,7 +15,6 @@
     "scanning": "Suche…",
     "noRadioFound": "Kein Radio gefunden",
     "radioUnit": "Radio",
-    "scriptLang": "Skriptsprache",
     "installToRadio": "Auf Radio installieren",
     "chooseDir": "Ordner wählen…",
     "noDirSelected": "Kein Ordner ausgewählt",
@@ -38,9 +37,6 @@
     "noUnitFound": "Keine Einheit gefunden",
     "logFile": "Log-Datei",
     "noLogSelected": "Kein Log ausgewählt",
-    "installScripts": "Skripte auf SD installieren",
-    "installScriptsTitle": "Lua-Skripte auf {{root}} installieren",
-    "scriptLangTitle": "Skriptsprache auf der Radio",
     "editLayout": "Layout bearbeiten",
     "csvPathPlaceholder": "/Pfad/zur/log.csv",
     "manualDesc": "Wählen Sie eine CSV-Log-Datei von Ihrem Computer aus.",
@@ -56,11 +52,8 @@
     "selectedWidget": "Ausgewähltes Widget",
     "noWidgetSelected": "Kein Widget ausgewählt",
     "name": "Name",
-    "label": "Beschriftung",
     "source": "Quelle",
     "widgetType": "Widget-Typ",
-    "widthPx": "Breite px",
-    "heightPx": "Höhe px",
     "sectionTransform": "Transformation",
     "subgroupPosition": "Position",
     "subgroupSize": "Größe",
@@ -72,7 +65,6 @@
     "resetZoom": "Zoom zurücksetzen",
     "zoomIn": "Hineinzoomen",
     "swapDimensions": "Breite ↔ Höhe tauschen",
-    "dataTransform": "Transform",
     "transform_min": "Min (laufend)",
     "transform_max": "Max (laufend)",
     "transform_avg": "Durchschnitt (laufend)",
@@ -83,22 +75,16 @@
     "rangeMax": "Max"
   },
   "colors": {
-    "value": "Wert",
-    "labelText": "Beschriftung",
     "boxFill": "Box-Füllung",
     "boxOutline": "Box-Kontur",
     "spokeHub": "Speiche / Nabe",
-    "valueText": "Werttext",
     "gaugeFill": "Gauge-Füllung",
     "gaugeOutline": "Gauge-Kontur",
     "negativeFill": "Negative Füllung",
     "positiveFill": "Positive Füllung",
     "centerMark": "Mittelmarkierung",
     "trackFill": "Spurenfüllung",
-    "trackOutline": "Spurenkontur",
-    "needleHub": "Zeiger / Nabe",
-    "circleFill": "Kreisfüllung",
-    "circleOutline": "Kreiskontur"
+    "trackOutline": "Spurenkontur"
   },
   "export": {
     "renderSettings": "Render-Einstellungen",
@@ -129,11 +115,7 @@
     "settingsSavedPath": "Einstellungen gespeichert: {{path}}",
     "loadedSamples": "{{count}} Proben geladen",
     "foundRadios": "{{count}} Funkquelle(n) gefunden",
-    "noEdgeTx": "Keine EdgeTX-SD gefunden",
-    "scriptsInstalled": "Skripte installiert ({{count}} Dateien):"
-  },
-  "language": {
-    "label": "Sprache"
+    "noEdgeTx": "Keine EdgeTX-SD gefunden"
   },
   "support": {
     "channelSub": "YouTube RC-Kanal auf Spanisch",
