@@ -1,6 +1,6 @@
 {
   "name": "mt12-overlay-studio",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Electron app for MT12OverlayStudio",
   "main": "dist/main/main.js",
   "author": "dgara",
