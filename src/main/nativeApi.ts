@@ -70,7 +70,6 @@ function defaultItemForSource(source: string, itemId: string) {
       bg_visible: true,
       outline_color: "#ffffff",
       outline_visible: true,
-      text_visible: true,
       shadow_visible: true,
     },
     item_ch1_1: {
@@ -90,7 +89,6 @@ function defaultItemForSource(source: string, itemId: string) {
       bg_visible: true,
       outline_color: "#ffffff",
       outline_visible: true,
-      text_visible: true,
       shadow_visible: true,
     },
     item_ch2_1: {
@@ -110,7 +108,6 @@ function defaultItemForSource(source: string, itemId: string) {
       bg_visible: true,
       outline_color: "#ffffff",
       outline_visible: true,
-      text_visible: true,
       shadow_visible: true,
     },
     item_ch3_1: {
@@ -130,7 +127,6 @@ function defaultItemForSource(source: string, itemId: string) {
       bg_visible: true,
       outline_color: "#ffffff",
       outline_visible: true,
-      text_visible: true,
       shadow_visible: true,
     },
     item_ch4_1: {
@@ -150,7 +146,6 @@ function defaultItemForSource(source: string, itemId: string) {
       bg_visible: true,
       outline_color: "#ffffff",
       outline_visible: true,
-      text_visible: true,
       shadow_visible: true,
     },
   };
@@ -173,7 +168,6 @@ function defaultItemForSource(source: string, itemId: string) {
     bg_visible: true,
     outline_color: "#ffffff",
     outline_visible: true,
-    text_visible: true,
     shadow_visible: true,
   };
   if (source === "ch2") {
@@ -235,7 +229,6 @@ function sanitizeLayout(layout: unknown) {
       bg_visible: userItem.bg_visible !== undefined ? userItem.bg_visible !== false : itemDefaults.bg_visible !== false,
       outline_color: String(userItem.outline_color ?? itemDefaults.outline_color),
       outline_visible: userItem.outline_visible !== undefined ? userItem.outline_visible !== false : itemDefaults.outline_visible !== false,
-      text_visible: userItem.text_visible !== undefined ? userItem.text_visible !== false : itemDefaults.text_visible !== false,
       shadow_visible: userItem.shadow_visible !== undefined ? userItem.shadow_visible !== false : itemDefaults.shadow_visible !== false,
       ...(Array.isArray(userItem.transforms) ? { transforms: userItem.transforms as string[] } : {}),
       ...(userItem.range_min !== undefined ? { range_min: Number(userItem.range_min) } : {}),

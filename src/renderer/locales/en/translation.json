@@ -15,7 +15,6 @@
     "scanning": "Scanning…",
     "noRadioFound": "No radio detected",
     "radioUnit": "Radio",
-    "scriptLang": "Script language",
     "installToRadio": "Install to radio",
     "chooseDir": "Choose folder…",
     "noDirSelected": "No folder selected",
@@ -38,9 +37,6 @@
     "noUnitFound": "No unit found",
     "logFile": "Log file",
     "noLogSelected": "No log selected",
-    "installScripts": "Install Scripts to SD",
-    "installScriptsTitle": "Install RC logger Lua scripts to {{root}}",
-    "scriptLangTitle": "Script language on the radio",
     "editLayout": "Edit Layout",
     "csvPathPlaceholder": "/path/to/log.csv",
     "manualDesc": "Browse for a CSV log file from your computer.",
@@ -56,11 +52,8 @@
     "selectedWidget": "Selected widget",
     "noWidgetSelected": "No widget selected",
     "name": "Name",
-    "label": "Label",
     "source": "Source",
     "widgetType": "Widget type",
-    "widthPx": "Width px",
-    "heightPx": "Height px",
     "sectionTransform": "Transform",
     "subgroupPosition": "Position",
     "subgroupSize": "Size",
@@ -72,7 +65,6 @@
     "resetZoom": "Reset zoom",
     "zoomIn": "Zoom in",
     "swapDimensions": "Swap width ↔ height",
-    "dataTransform": "Transform",
     "transform_min": "Min (running)",
     "transform_max": "Max (running)",
     "transform_avg": "Avg (running)",
@@ -83,22 +75,16 @@
     "rangeMax": "Max"
   },
   "colors": {
-    "value": "Value",
-    "labelText": "Label",
     "boxFill": "Box fill",
     "boxOutline": "Box outline",
     "spokeHub": "Spoke / hub",
-    "valueText": "Value text",
     "gaugeFill": "Gauge fill",
     "gaugeOutline": "Gauge outline",
     "negativeFill": "Negative fill",
     "positiveFill": "Positive fill",
     "centerMark": "Center mark",
     "trackFill": "Track fill",
-    "trackOutline": "Track outline",
-    "needleHub": "Needle / hub",
-    "circleFill": "Circle fill",
-    "circleOutline": "Circle outline"
+    "trackOutline": "Track outline"
   },
   "export": {
     "renderSettings": "Render Settings",
@@ -129,11 +115,7 @@
     "settingsSavedPath": "Settings saved: {{path}}",
     "loadedSamples": "Loaded {{count}} samples",
     "foundRadios": "Found {{count}} radio source(s)",
-    "noEdgeTx": "No EdgeTX SD found",
-    "scriptsInstalled": "Scripts installed ({{count}} files):"
-  },
-  "language": {
-    "label": "Language"
+    "noEdgeTx": "No EdgeTX SD found"
   },
   "support": {
     "channelSub": "YouTube RC channel in Spanish",

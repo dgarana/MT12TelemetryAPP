@@ -1,14 +1,8 @@
 import { createCanvas, type Canvas } from "@napi-rs/canvas";
 import { renderFrame, type DrawCtx, type FrameState, type RunningStats } from "../shared/widgetDraw";
 
-export { type FrameState, type RunningStats };
-
 export function makeCanvas(width: number, height: number): Canvas {
   return createCanvas(width, height);
-}
-
-export async function encodeCanvasPng(canvas: Canvas): Promise<Buffer> {
-  return canvas.encode("png");
 }
 
 export function getRawFrame(canvas: Canvas): Buffer {

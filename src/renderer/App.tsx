@@ -26,9 +26,9 @@ import {
   clamp,
   defaultSettings,
   fallbackMetadata,
+  HANDLE_CURSORS,
   interpolateLocalState,
   itemBounds,
-  itemName,
   numeric,
   widgetSize,
   widgetTypesForSource,
@@ -57,7 +57,6 @@ function App() {
   const [previewState, setPreviewState] = useState<FrameState>({});
   const [previewTime, setPreviewTime] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
-  const [sourceLogs, setSourceLogs] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [radios, setRadios] = useState<RadioSource[]>([]);
@@ -163,10 +162,6 @@ function App() {
     setLogs((current) => [message, ...current].slice(0, 200));
   }
 
-  function pushSourceLog(message: string) {
-    setSourceLogs((current) => [message, ...current].slice(0, 50));
-  }
-
   function updateSetting<K extends keyof AppSettings>(key: K, value: AppSettings[K]) {
     setSettings((current) => ({ ...current, [key]: value }));
   }
@@ -214,9 +209,9 @@ function App() {
       const midPoint = loaded.duration_ms / 2;
       setPreviewTime(midPoint);
       updatePreviewFromSamples(loadedSamples, midPoint);
-      pushSourceLog(t("logs.loadedSamples", { count: loaded.sample_count }));
+      pushLog(t("logs.loadedSamples", { count: loaded.sample_count }));
     } catch (error) {
-      pushSourceLog(error instanceof Error ? error.message : String(error));
+      pushLog(error instanceof Error ? error.message : String(error));
     } finally {
       setBusy(false);
     }
@@ -239,7 +234,7 @@ function App() {
       if (requestId !== previewRequestRef.current) return;
       setPreviewState(result.state);
     } catch (error) {
-      pushSourceLog(error instanceof Error ? error.message : String(error));
+      pushLog(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -317,12 +312,12 @@ function App() {
     try {
       const result = await api.discoverRadios();
       setRadios(result.sources);
-      pushSourceLog(result.sources.length ? t("logs.foundRadios", { count: result.sources.length }) : t("logs.noEdgeTx"));
+      pushLog(result.sources.length ? t("logs.foundRadios", { count: result.sources.length }) : t("logs.noEdgeTx"));
       if (result.sources[0]) {
         await selectRadioSource(result.sources[0].root);
       }
     } catch (error) {
-      pushSourceLog(error instanceof Error ? error.message : String(error));
+      pushLog(error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -654,11 +649,6 @@ function App() {
     if (point) {
       const handle = locateResizeHandle(point.x, point.y);
       if (handle) {
-        const HANDLE_CURSORS: Record<HandleId, string> = {
-          nw: "nw-resize", n: "n-resize", ne: "ne-resize",
-          w: "w-resize", e: "e-resize",
-          sw: "sw-resize", s: "s-resize", se: "se-resize",
-        };
         setPreviewCursor(HANDLE_CURSORS[handle]);
         return;
       }

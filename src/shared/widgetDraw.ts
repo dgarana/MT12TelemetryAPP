@@ -112,7 +112,7 @@ function rgba(hex: string, alpha: number): string {
 /** CSS: background-color: ${bg_color}aa  → 0xAA/0xFF ≈ 0.6667 */
 const BG_ALPHA = 170 / 255;
 
-export function formatValue(value: number): string {
+function formatValue(value: number): string {
   const v = Math.round(value);
   return `${v >= 0 ? "+" : ""}${v}`;
 }
@@ -127,7 +127,7 @@ function widgetBaseSize(widget: string): [number, number] {
   return sizes[widget] ?? [180, 60];
 }
 
-export function itemBoundsFromLayout(
+function itemBoundsFromLayout(
   item: LayoutItem,
   fw: number,
   fh: number,
@@ -164,7 +164,7 @@ function rrect(ctx: DrawCtx, x: number, y: number, w: number, h: number, r: numb
   ctx.closePath();
 }
 
-// ─── Widget background (.overlay-widget) ─────────────────────────────────────
+// ─── Widget background ───────────────────────────────────────────────────────
 
 function drawBackground(ctx: DrawCtx, w: number, h: number, item: LayoutItem, sc: number) {
   if (item.source !== "time" && item.widget !== "text") return;

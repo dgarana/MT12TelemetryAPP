@@ -63,7 +63,6 @@ export const fallbackItem: LayoutItem = {
   bg_visible: true,
   outline_color: "#ffffff",
   outline_visible: true,
-  text_visible: true,
   shadow_visible: true,
 };
 
@@ -181,15 +180,6 @@ export function colorControlLabel(item: LayoutItem, key: ColorKey): string | nul
   }
 
   return key;
-}
-
-export function valueForSource(state: FrameState, source: string) {
-  const value = Number(state[source]);
-  return Number.isFinite(value) ? value : 0;
-}
-
-export function formatValue(value: number) {
-  return `${value >= 0 ? "+" : ""}${Math.round(value)}`;
 }
 
 export function interpolateLocalState(samples: CsvSample[], timeMs: number): FrameState {

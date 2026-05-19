@@ -1,4 +1,3 @@
-import React from "react";
 import { useTranslation } from "react-i18next";
 import QRCode from "react-qr-code";
 import topercLogo from "../assets/toperc-logo.png";

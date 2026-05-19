@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import type { AppMetadata, AppSettings, CsvSummary, FrameState, LayoutItem } from "../../shared/types";
 import type { RunningStats } from "../../shared/widgetDraw";
-import { Field } from "../components/Field";
 import { WidgetCanvas } from "../components/WidgetCanvas";
 import {
   clamp,
